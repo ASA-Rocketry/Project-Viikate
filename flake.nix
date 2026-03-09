@@ -28,6 +28,7 @@
 
             pkgs.just
             pkgs.clang-tools
+            pkgs.sphinx
           ];
         };
       }

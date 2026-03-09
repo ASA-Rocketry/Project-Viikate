@@ -80,6 +80,7 @@ avionics/**/sym-lib-cache
 avionics/**/fp-lib-cache
 avionics/**/sym-info-cache
 avionics/**/fp-info-table
+avionics/**/fp-info-cache
 
 # ----------------------------------------------------------------------
 # Simulator and SPICE temporary files
@@ -125,3 +126,5 @@ firmware/subprojects/
 !firmware/subprojects/packagefiles
 !firmware/subprojects/packagefiles/**
 **/.cache/
+
+docs/_build
