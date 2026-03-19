@@ -6,7 +6,7 @@
 
 DataLogger::DataLogger(){}
 
-void DataLogger::initialize(){
+void DataLogger::Initialize(){
     pinMode(Constants::CS_PIN, OUTPUT);
     SD.begin(Constants::CS_PIN);
 
@@ -15,25 +15,25 @@ void DataLogger::initialize(){
     while (SD.exists("flight" + String(i) + ".csv")) {
         i++;
     }
-    flightFile_ = "flight"+ String(i) + ".csv";
-    eventFile_ = "event"+ String(i) + ".csv";
+    FlightFile_ = "flight"+ String(i) + ".csv";
+    EventFile_ = "event"+ String(i) + ".csv";
 
-    File FDF = SD.open(flightFile_, FILE_WRITE); // Flight Data File
+    File FDF = SD.open(FlightFile_, FILE_WRITE); // Flight Data File
     if (FDF){ // Writing headers for FDF
         FDF.println("timeMs,altitude,verticalVelocity,accelZ,rotatZ,accelMagnitude,rbfRemoved");
         FDF.close();
     }
    
-    File EDF = SD.open(eventFile_, FILE_WRITE); // Event Data File
+    File EDF = SD.open(EventFile_, FILE_WRITE); // Event Data File
     if (EDF) {
         EDF.println("timeMs,severity,message");
         EDF.close();
-        logEvent(LogType::INFO, "LOG START");
+        LogEvent(LogType::INFO, "LOG START");
     }
 }
 
-void DataLogger::logFlightData(const FlightData& data){
-    File FDF = SD.open(flightFile_, FILE_WRITE); // Flight Data File
+void DataLogger::LogFlightData(const FlightData& data){
+    File FDF = SD.open(FlightFile_, FILE_WRITE); // Flight Data File
     if (FDF){
         FDF.print(data.timeMs);
         FDF.print(",");
@@ -53,7 +53,7 @@ void DataLogger::logFlightData(const FlightData& data){
 }
 
 
-void DataLogger::logEvent(const LogType& type, const String& event){
+void DataLogger::LogEvent(const LogType& type, const String& event){
     static String lastEvent = "";
     static unsigned long lastLogTime = 0;
     
@@ -62,7 +62,7 @@ void DataLogger::logEvent(const LogType& type, const String& event){
     lastEvent = event;
     lastLogTime = millis();
 
-    File EDF = SD.open(eventFile_, FILE_WRITE);
+    File EDF = SD.open(EventFile_, FILE_WRITE);
     if (EDF) {
         EDF.print(millis());
         EDF.print(",");

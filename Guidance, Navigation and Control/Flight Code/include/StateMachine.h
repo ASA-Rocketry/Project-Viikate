@@ -48,7 +48,7 @@ public:
      * @param data  Latest fused flight data from hardware and sensors
      * @return State  The updated flight state
      */
-    State update(const FlightData& data);
+    State Update(const FlightData& data);
 
     /**
      * @brief Get the current state
@@ -61,21 +61,21 @@ private:
     /**
      * @brief Currently active flight state.
      */
-    State ActiveState;
+    State ActiveState_;
 
     /**
      * @brief Timestamp when the current state was entered.
      *
      * Used for time-based gating and safety checks.
      */
-    unsigned long stateEntryTimeMs;
+    unsigned long StateEntryTimeMs_;
 
     /**
      * @brief Timestamp when liftoff occurred
      * 
      * Portrayed as ms from boot
      */
-    unsigned long liftoffTimeMs;
+    unsigned long LiftoffTimeMs_;
 
     /* ---------- State transition condition checks ---------- */
 

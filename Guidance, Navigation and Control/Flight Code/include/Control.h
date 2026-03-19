@@ -6,7 +6,7 @@
 class Control {
     public: 
         Control();
-        void initialize();
+        void Initialize();
         void PID();
         
     private:

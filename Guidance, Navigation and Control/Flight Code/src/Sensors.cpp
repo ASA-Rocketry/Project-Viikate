@@ -1,5 +1,5 @@
+#include <Arduino.h>
 #include "Sensors.h"
-#include "Arduino.h"
 #include "Constants.h"
 #include "Wire.h"
 #include "MPU6500.h"
@@ -25,18 +25,18 @@ FlightData Sensors::readFlightData() {
         data_.rbfRemoved       = digitalRead(Constants::RBF_PIN);
     }
     else {
-        datalogger_.logEvent(LogType::ERROR, "IMU READ FAILURE");
+        datalogger_.LogEvent(LogType::ERROR, "IMU READ FAILURE");
     }
     return data_;
 }
 
-void Sensors::initialize() {
+void Sensors::Initialize() {
     Wire.begin(); // Begin I2C transmission
     if (!imu.Begin()) {
-        datalogger_.logEvent(LogType::CRITICAL, "IMU INIT FAILURE");
+        datalogger_.LogEvent(LogType::CRITICAL, "IMU INIT FAILURE");
     }
     else {
-        datalogger_.logEvent(LogType::INFO, "IMU INITIALIZED");
+        datalogger_.LogEvent(LogType::INFO, "IMU INITIALIZED");
     }
 }
 

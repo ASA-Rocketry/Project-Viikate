@@ -8,7 +8,7 @@
 class Sensors {
     public: 
         Sensors(DataLogger& datalogger);
-        void initialize();
+        void Initialize();
         FlightData readFlightData();
 
     private: 

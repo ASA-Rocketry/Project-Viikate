@@ -2,11 +2,11 @@
 #include "Constants.h"
 
 StateMachine::StateMachine() {
-    ActiveState = IDLE;
+    ActiveState_ = IDLE;
 }
 
 State StateMachine::GetState() {
-    return ActiveState;
+    return ActiveState_;
 }
 
 bool StateMachine::StagingCheck(const FlightData& data) const{
@@ -42,7 +42,7 @@ bool StateMachine::ApogeeCheck(const FlightData& data) const{
 }
 
 bool StateMachine::RDDCheck(const FlightData& data) const{
-    if (((data.verticalVelocity < 5) and (data.accelZ < 0)) or (data.timeMs - liftoffTimeMs > 20000)) {
+    if (((data.verticalVelocity < 5) and (data.accelZ < 0)) or (data.timeMs - LiftoffTimeMs_ > 20000)) {
         return true;
     } else {
         return false;
@@ -57,10 +57,10 @@ bool StateMachine::LandCheck(const FlightData& data) const{
     }
 }
 
-State StateMachine::update(const FlightData& data){
-    State nextState = ActiveState;
+State StateMachine::Update(const FlightData& data){
+    State nextState = ActiveState_;
 
-        switch (ActiveState) {
+        switch (ActiveState_) {
             case IDLE:
                 if (StagingCheck(data)) nextState = LAUNCHPAD;
                 break;
@@ -89,15 +89,15 @@ State StateMachine::update(const FlightData& data){
                 break;
         }
 
-        if (nextState != ActiveState) {
+        if (nextState != ActiveState_) {
         OnEnter(nextState, data.timeMs);
-        ActiveState = nextState;
+        ActiveState_ = nextState;
     }
-    return ActiveState;
+    return ActiveState_;
 }
 
 void StateMachine::OnEnter(State newState, unsigned long timeMs) {
-    stateEntryTimeMs = timeMs;
+    StateEntryTimeMs_ = timeMs;
     
     switch(newState) {
         case IDLE:
@@ -107,7 +107,7 @@ void StateMachine::OnEnter(State newState, unsigned long timeMs) {
             break;
 
         case LIFTOFF:
-            liftoffTimeMs = timeMs;
+            LiftoffTimeMs_ = timeMs;
             break;
 
         case COAST:
