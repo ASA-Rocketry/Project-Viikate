@@ -65,3 +65,5 @@ class DataLogger {
 };
 
 #endif  // DATA_LOGGER_H_
+
+// Test

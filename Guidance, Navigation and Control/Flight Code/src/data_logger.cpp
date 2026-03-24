@@ -96,3 +96,5 @@ void DataLogger::LogEvent(const LogType& type, const String& event) {
 
   event_file.close();
 }
+
+// Test
