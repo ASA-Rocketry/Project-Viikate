@@ -1,79 +1,78 @@
-#include "Sensors.h"
+#include "sensors.h"
 #include "Arduino.h"
-#include "Constants.h"
+#include "constants.h"
 #include "Wire.h"
 #include "MPU6500.h"
- 
-Sensors::Sensors(DataLogger& datalogger) : imu(&Wire, bfs::Mpu6500::I2C_ADDR_PRIM),
-datalogger_(datalogger) {
-    data_.altitude = 0.0;
-    data_.verticalVelocity = 0.0;
-    data_.accelZ = 0.0;
-    data_.accelMagnitude = 0.0;
-    data_.timeMs = 0.0;
-    data_.rbfRemoved = false;
+
+/**
+ * @brief Constructs a Sensors object.
+ * @param data_logger Reference to the DataLogger for event logging.
+ */
+Sensors::Sensors(DataLogger& data_logger)
+    : imu(&Wire, bfs::Mpu6500::I2C_ADDR_PRIM), data_logger_(data_logger) {
+  data_.altitude = 0.0f;
+  data_.vertical_velocity = 0.0f;
+  data_.accel_z = 0.0f;
+  data_.rot_z = 0.0f;
+  data_.accel_magnitude = 0.0f;
+  data_.time_ms = 0;
+  data_.rbf_removed = false;
 }
 
-FlightData Sensors::readFlightData() {
-    data_.timeMs           = millis(); // Time is always read and linked with the flight data here. Not at the time of writing.
-    if (imu.Read()){
-        data_.altitude         = readAltitude();
-        data_.verticalVelocity = computeVerticalVelocity();
-        data_.accelZ           = readAccelZ();
-        data_.rotatZ           = readRotatZ();
-        data_.accelMagnitude   = readAccelMagnitude();
-        data_.rbfRemoved       = digitalRead(Constants::RBF_PIN);
-    }
-    else {
-        datalogger_.logEvent(LogType::ERROR, "IMU READ FAILURE");
-    }
-    return data_;
+/**
+ * @brief Reads current flight telemetry and populates FlightData.
+ * @return FlightData structure with the latest sensor measurements.
+ */
+FlightData Sensors::ReadFlightData() {
+  data_.time_ms = millis();  // Timestamp linked to flight data
+
+  if (imu.Read()) {
+    data_.altitude = ReadAltitude();
+    data_.vertical_velocity = ComputeVerticalVelocity();
+    data_.accel_z = ReadAccelZ();
+    data_.rot_z = ReadRotZ();
+    data_.accel_magnitude = ReadAccelMagnitude();
+    data_.rbf_removed = digitalRead(constants::kRbfPin);
+  } else {
+    data_logger_.LogEvent(LogType::kError, "IMU READ FAILURE");
+  }
+
+  return data_;
 }
 
-void Sensors::initialize() {
-    Wire.begin(); // Begin I2C transmission
-    if (!imu.Begin()) {
-        datalogger_.logEvent(LogType::CRITICAL, "IMU INIT FAILURE");
-    }
-    else {
-        datalogger_.logEvent(LogType::INFO, "IMU INITIALIZED");
-    }
+/**
+ * @brief Initializes the sensors, including I2C and IMU.
+ */
+void Sensors::Initialize() {
+  Wire.begin();  // Begin I2C transmission
+  if (!imu.Begin()) {
+    data_logger_.LogEvent(LogType::kCritical, "IMU INIT FAILURE");
+  } else {
+    data_logger_.LogEvent(LogType::kInfo, "IMU INITIALIZED");
+  }
 }
 
-float Sensors::readAltitude() {
-    return 1.11;
+/** @brief Reads the current altitude (stub implementation). */
+float Sensors::ReadAltitude() {
+  return 1.11f;
 }
 
-float Sensors::computeVerticalVelocity() {
-    return 2.22;
+/** @brief Computes vertical velocity (stub implementation). */
+float Sensors::ComputeVerticalVelocity() {
+  return 2.22f;
 }
 
-float Sensors::readAccelZ() {
-    return imu.accel_z_mps2() + Constants::GRAVITY; // Remove gravity
+/** @brief Reads linear acceleration along Z-axis, gravity-compensated. */
+float Sensors::ReadAccelZ() {
+  return imu.accel_z_mps2() + constants::kGravity;
 }
 
-float Sensors::readRotatZ() {
-    return imu.gyro_z_radps();
-
+/** @brief Reads angular velocity around Z-axis. */
+float Sensors::ReadRotZ() {
+  return imu.gyro_z_radps();
 }
 
-float Sensors::readAccelMagnitude() {
-    return 4.44;
+/** @brief Computes total acceleration magnitude (stub implementation). */
+float Sensors::ReadAccelMagnitude() {
+  return 4.44f;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
