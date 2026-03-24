@@ -11,3 +11,5 @@ class Control {
 };
 
 #endif  // CONTROL_H_
+
+// Test

@@ -70,3 +70,5 @@ enum class LogType : uint8_t {
 };
 
 #endif  // CONSTANTS_H_
+
+// Test
