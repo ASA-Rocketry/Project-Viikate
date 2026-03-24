@@ -22,9 +22,4 @@ class Sensors {
         DataLogger& datalogger_;
 };
 
-
-
-
-
-
 #endif

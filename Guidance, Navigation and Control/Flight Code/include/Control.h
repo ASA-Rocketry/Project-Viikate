@@ -10,30 +10,6 @@ class Control {
         void PID();
         
     private:
-
-
-
-
-
-
-
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif

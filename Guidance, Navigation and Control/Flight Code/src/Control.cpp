@@ -1,6 +1,5 @@
 #include "Control.h"
 
-
 Control::Control() {}
 
 void Control::initialize(){}

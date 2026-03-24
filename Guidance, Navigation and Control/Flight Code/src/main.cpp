@@ -3,7 +3,6 @@
 #include "StateMachine.h"
 #include "Sensors.h"
 
-
 DataLogger DataLogger_;
 StateMachine StateMachine_;
 Sensors Sensors_(DataLogger_);
