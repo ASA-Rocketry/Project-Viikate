@@ -1,25 +1,43 @@
 #include "Arduino.h"
-#include "Datalogger.h"
-#include "StateMachine.h"
-#include "Sensors.h"
+#include "data_logger.h"
+#include "state_machine.h"
+#include "sensors.h"
 
+// Global objects
+DataLogger data_logger;
+StateMachine state_machine;
+Sensors sensors(data_logger);
 
-DataLogger DataLogger_;
-StateMachine StateMachine_;
-Sensors Sensors_(DataLogger_);
-
+/**
+ * @brief Arduino setup function.
+ *
+ * Initializes serial communication, sensors, and data logger.
+ * Logs setup completion.
+ */
 void setup() {
-  Serial.begin(115200); 
-  DataLogger_.initialize(); // Initialize this before anything else to log failures
-  Sensors_.initialize();
-  // Controls_.initialize(); 
-  DataLogger_.logEvent(LogType::INFO, "SETUP COMPLETE");
+  Serial.begin(115200);
+
+  // Initialize data logger before other components to capture failures
+  data_logger.Initialize();
+  sensors.Initialize();
+
+  // Log setup completion
+  data_logger.LogEvent(LogType::kInfo, "SETUP COMPLETE");
 }
 
+/**
+ * @brief Arduino main loop.
+ *
+ * Reads sensor data, logs flight telemetry, and performs control.
+ */
 void loop() {
-  FlightData data = Sensors_.readFlightData();
-  DataLogger_.logFlightData(data);
-  // Controller.control(data)
+  FlightData flight_data = sensors.ReadFlightData();
+
+  // Log flight telemetry
+  data_logger.LogFlightData(flight_data);
+
+  // Example control call (currently commented out)
+  // controller.Control(flight_data);
+
   delay(100);
- 
 }

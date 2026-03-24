@@ -1,39 +1,13 @@
-#ifndef CONTROL
-#define CONTROL
-
-
+#ifndef CONTROL_H_
+#define CONTROL_H_
 
 class Control {
-    public: 
-        Control();
-        void initialize();
-        void PID();
-        
-    private:
+ public:
+  Control();
+  void Initialize();
+  void PID();
 
-
-
-
-
-
-
+ private:
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#endif
+#endif  // CONTROL_H_

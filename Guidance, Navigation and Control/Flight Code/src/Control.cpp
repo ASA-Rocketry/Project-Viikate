@@ -1,8 +1,16 @@
-#include "Control.h"
+#include "control.h"
 
-
+/** 
+ * @brief Constructs a Control object.
+ */
 Control::Control() {}
 
-void Control::initialize(){}
+/** 
+ * @brief Initializes the control system.
+ */
+void Control::Initialize() {}
 
-void Control::PID(){}
+/** 
+ * @brief Executes the PID control loop.
+ */
+void Control::PID() {}

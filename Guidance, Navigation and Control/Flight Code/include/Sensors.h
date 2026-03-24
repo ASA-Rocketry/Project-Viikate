@@ -1,30 +1,32 @@
-#ifndef SENSORS
-#define SENSORS
+#ifndef SENSORS_H_
+#define SENSORS_H_
 
-#include "Arduino.h"
+#include <Arduino.h>
 #include "MPU6500.h"
-#include "DataLogger.h"
+#include "data_logger.h"
 
+/**
+ * @class Sensors
+ * @brief Handles sensor interfacing and data acquisition for flight telemetry.
+ */
 class Sensors {
-    public: 
-        Sensors(DataLogger& datalogger);
-        void initialize();
-        FlightData readFlightData();
+ public:
+  explicit Sensors(DataLogger& data_logger);
 
-    private: 
-        bfs::Mpu6500 imu;
-        FlightData data_;
-        float readAltitude();
-        float computeVerticalVelocity();
-        float readAccelZ();
-        float readRotatZ();
-        float readAccelMagnitude();
-        DataLogger& datalogger_;
+  void Initialize();
+  FlightData ReadFlightData();
+
+ private:
+  bfs::Mpu6500 imu;
+  FlightData data_;
+
+  float ReadAltitude();
+  float ComputeVerticalVelocity();
+  float ReadAccelZ();
+  float ReadRotZ();
+  float ReadAccelMagnitude();
+
+  DataLogger& data_logger_;
 };
 
-
-
-
-
-
-#endif
+#endif  // SENSORS_H_
