@@ -1,8 +1,7 @@
 # Project-Viikate
 
 **Schedule**
-<img width="2204" height="1086" alt="image" src="https://github.com/user-attachments/assets/93f6e9af-c621-46f8-911b-32eb5aa300ea" />
-
+<img width="3102" height="1524" alt="image" src="https://github.com/user-attachments/assets/f3dc2c8d-f546-4d77-93df-0deba5dccf37" />
 
 **Critical Design Decisions**
 
