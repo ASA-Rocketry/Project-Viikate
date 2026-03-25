@@ -72,5 +72,3 @@ void DataLogger::logEvent(const LogType& type, const String& event){
         event_data_file.close(); 
     }
 }
-
-// Main now works correctly.

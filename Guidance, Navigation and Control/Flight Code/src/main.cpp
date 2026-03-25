@@ -26,5 +26,3 @@ void loop() {
   // Controller.control(data)
   delay(100);
 }
-
-// Main now works correctly.

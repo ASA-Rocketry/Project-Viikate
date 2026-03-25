@@ -14,5 +14,3 @@ void Control::initialize() {}
  * @brief Executes the PID control loop.
  */
 void Control::PID() {}
-
-// Main now works correctly.

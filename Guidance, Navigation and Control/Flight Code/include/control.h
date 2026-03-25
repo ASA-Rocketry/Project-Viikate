@@ -11,5 +11,3 @@ class Control {
 };
 
 #endif  // FLIGHT_CODE_INCLUDE_CONTROL_H_
-
-// Main now works correctly.

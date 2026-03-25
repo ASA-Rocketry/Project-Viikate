@@ -143,5 +143,3 @@ private:
 };
 
 #endif  // FLIGHT_CODE_INCLUDE_STATE_MACHINE_H_
-
-// Main now works correctly.

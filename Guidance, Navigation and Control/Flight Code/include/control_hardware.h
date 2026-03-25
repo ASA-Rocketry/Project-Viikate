@@ -33,5 +33,3 @@ class ControlHardware {
 };
 
 #endif  // FLIGHT_CODE_INCLUDE_CONTROL_HARDWARE_H_
-
-// Main now works correctly.
