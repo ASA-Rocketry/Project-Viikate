@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include "data_logger.h"
 #include "state_machine.h"
-#include "Sensors.h"
+#include "sensors.h"
 
 DataLogger DataLogger_;
 StateMachine StateMachine_;
