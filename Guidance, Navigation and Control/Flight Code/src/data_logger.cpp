@@ -6,7 +6,7 @@
 
 DataLogger::DataLogger(){}
 
-void DataLogger::initialize(){
+void DataLogger::Initialize(){
     pinMode(constants::kCsPin, OUTPUT);
     SD.begin(constants::kCsPin);
 
@@ -15,25 +15,25 @@ void DataLogger::initialize(){
     while (SD.exists("flight" + String(i) + ".csv")) {
         i++;
     }
-    flight_file = "flight"+ String(i) + ".csv";
-    event_file = "event"+ String(i) + ".csv";
+    flight_file_ = "flight"+ String(i) + ".csv";
+    event_file_ = "event"+ String(i) + ".csv";
 
-    File flight_data_file = SD.open(flight_file, FILE_WRITE); // Flight Data File
+    File flight_data_file = SD.open(flight_file_, FILE_WRITE); // Flight Data File
     if (flight_data_file){ // Writing headers for FDF
         flight_data_file.println("time_ms,altitude,vertical_velocity,accel_z,rot_z,accel_magnitude,rbf_removed");
         flight_data_file.close();
     }
    
-    File event_data_file = SD.open(event_file, FILE_WRITE); // Event Data File
-    if (event_data_file) {
-        event_data_file.println("time_ms,severity,message");
-        event_data_file.close();
-        logEvent(LogType::kInfo, "LOG START");
+    File event_data_file_ = SD.open(event_file_, FILE_WRITE); // Event Data File
+    if (event_data_file_) {
+        event_data_file_.println("time_ms,severity,message");
+        event_data_file_.close();
+        LogEvent(LogType::kInfo, "LOG START");
     }
 }
 
-void DataLogger::logFlightData(const FlightData& data){
-    File flight_data_file = SD.open(flight_file, FILE_WRITE); // Flight Data File
+void DataLogger::LogFlightData(const FlightData& data){
+    File flight_data_file = SD.open(flight_file_, FILE_WRITE); // Flight Data File
     if (flight_data_file){
         flight_data_file.print(data.time_ms);
         flight_data_file.print(",");
@@ -53,7 +53,7 @@ void DataLogger::logFlightData(const FlightData& data){
 }
 
 
-void DataLogger::logEvent(const LogType& type, const String& event){
+void DataLogger::LogEvent(const LogType& type, const String& event){
     static String last_event = "";
     static unsigned long last_log_time = 0;
     
@@ -62,7 +62,7 @@ void DataLogger::logEvent(const LogType& type, const String& event){
     last_event = event;
     last_log_time = millis();
 
-    File event_data_file = SD.open(event_file, FILE_WRITE);
+    File event_data_file = SD.open(event_file_, FILE_WRITE);
     if (event_data_file) {
         event_data_file.print(millis());
         event_data_file.print(",");

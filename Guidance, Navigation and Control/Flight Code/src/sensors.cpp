@@ -23,7 +23,7 @@ Sensors::Sensors(DataLogger& data_logger)
  * @brief Reads current flight telemetry and populates FlightData.
  * @return FlightData structure with the latest sensor measurements.
  */
-FlightData Sensors::readFlightData() {
+FlightData Sensors::ReadFlightData() {
   flight_data.time_ms = millis();  // Timestamp linked to flight data
 
   if (imu.Read()) {
@@ -34,7 +34,7 @@ FlightData Sensors::readFlightData() {
     flight_data.accel_magnitude = readAccelMagnitude();
     flight_data.rbf_removed = digitalRead(constants::kRbfPin);
   } else {
-    data_logger_.logEvent(LogType::kError, "IMU READ FAILURE");
+    data_logger_.LogEvent(LogType::kError, "IMU READ FAILURE");
   }
 
   return flight_data;
@@ -43,12 +43,12 @@ FlightData Sensors::readFlightData() {
 /**
  * @brief Initializes the sensors, including I2C and IMU.
  */
-void Sensors::initialize() {
+void Sensors::Initialize() {
   Wire.begin();  // Begin I2C transmission
   if (!imu.Begin()) {
-    data_logger_.logEvent(LogType::kCritical, "IMU INIT FAILURE");
+    data_logger_.LogEvent(LogType::kCritical, "IMU INIT FAILURE");
   } else {
-    data_logger_.logEvent(LogType::kInfo, "IMU INITIALIZED");
+    data_logger_.LogEvent(LogType::kInfo, "IMU INITIALIZED");
   }
 }
 
