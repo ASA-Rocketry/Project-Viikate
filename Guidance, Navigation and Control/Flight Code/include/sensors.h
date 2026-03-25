@@ -1,15 +1,17 @@
 #ifndef FLIGHT_CODE_INCLUDE_SENSORS_H_
 #define FLIGHT_CODE_INCLUDE_SENSORS_H_
 
-#include "Arduino.h"
+#include <Arduino.h>
 #include "MPU6500.h"
 #include "data_logger.h"
 
+/**
+ * @class Sensors
+ * @brief Handles sensor interfacing and data acquisition for flight telemetry.
+ */
 class Sensors {
-    public: 
-        Sensors(DataLogger& datalogger);
-        void initialize();
-        FlightData readFlightData();
+ public:
+  explicit Sensors(DataLogger& data_logger);
 
     private: 
         bfs::Mpu6500 imu;

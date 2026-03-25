@@ -15,10 +15,16 @@ void setup() {
   data_logger.logEvent(LogType::kInfo, "SETUP COMPLETE");
 }
 
+/**
+ * @brief Arduino main loop.
+ *
+ * Reads sensor data, logs flight telemetry, and performs control.
+ */
 void loop() {
   FlightData data = sensors.readFlightData();
   data_logger.logFlightData(data);
   // Controller.control(data)
   delay(100);
- 
 }
+
+// Test
