@@ -9,10 +9,10 @@ Sensors sensors(data_logger);
 
 void setup() {
   Serial.begin(115200); 
-  data_logger.initialize(); // Initialize this before anything else to log failures
-  sensors.initialize();
+  data_logger.Initialize(); // Initialize this before anything else to log failures
+  sensors.Initialize();
   // Controls_.initialize(); 
-  data_logger.logEvent(LogType::kInfo, "SETUP COMPLETE");
+  data_logger.LogEvent(LogType::kInfo, "SETUP COMPLETE");
 }
 
 /**
@@ -21,8 +21,8 @@ void setup() {
  * Reads sensor data, logs flight telemetry, and performs control.
  */
 void loop() {
-  FlightData data = sensors.readFlightData();
-  data_logger.logFlightData(data);
+  FlightData data = sensors.ReadFlightData();
+  data_logger.LogFlightData(data);
   // Controller.control(data)
   delay(100);
 }

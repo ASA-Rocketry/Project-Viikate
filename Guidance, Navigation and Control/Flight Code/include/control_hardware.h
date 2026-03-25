@@ -17,13 +17,13 @@ class ControlHardware {
   ControlHardware();
 
   /** @brief Initializes all servo hardware. */
-  void initialize();
+  void Initialize();
 
   /**
    * @brief Sets the target angle for all canard servos.
    * @param angle_degrees Desired canard deflection in degrees.
    */
-  void setCanardAngle(float angle_degrees);
+  void SetCanardAngle(float angle_degrees);
 
  private:
   Servo canard_servo1_;  /**< Servo for canard 1 */

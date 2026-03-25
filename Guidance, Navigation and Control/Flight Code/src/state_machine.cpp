@@ -59,7 +59,7 @@ bool StateMachine::LandCheck(const FlightData& data) const{
     }
 }
 
-State StateMachine::update(const FlightData& data){
+State StateMachine::Update(const FlightData& data){
     State next_state = active_state;
 
         switch (active_state) {
@@ -80,10 +80,10 @@ State StateMachine::update(const FlightData& data){
                 break;
 
             case State::kApogee:
-                if (RDDCheck(data)) next_state = State::kRdd;
+                if (RDDCheck(data)) next_state = State::kRDD;
                 break;
 
-            case State::kRdd:
+            case State::kRDD:
                 if (LandCheck(data)) next_state = State::kGround;
                 break;
 
@@ -118,7 +118,7 @@ void StateMachine::OnEnter(State new_state, unsigned long time_ms) {
         case State::kApogee:
             break;
 
-        case State::kRdd:
+        case State::kRDD:
             break;
 
         case State::kGround:

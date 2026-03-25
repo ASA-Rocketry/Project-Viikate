@@ -16,7 +16,7 @@ enum class State {
     kLiftoff,     // Motor burning, strong upward acceleration
     kCoast,       // Motor burnout, upward velocity and downward acceleration
     kApogee,      // Vertical velocity ~ 0 (transition state)
-    kRdd,         // Descent detected (5 m/s), recovery device deployed
+    kRDD,         // Descent detected (5 m/s), recovery device deployed
     kGround       // Rocket has landed and stopped moving
 };
 
@@ -48,7 +48,7 @@ public:
      * @param data  Latest fused flight data from hardware and sensors
      * @return State  The updated flight state
      */
-    State update(const FlightData& data);
+    State Update(const FlightData& data);
 
     /**
      * @brief Get the current state

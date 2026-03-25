@@ -13,8 +13,8 @@ class Sensors {
  public:
   explicit Sensors(DataLogger& data_logger);
 
-  void initialize();
-  FlightData readFlightData();
+  void Initialize();
+  FlightData ReadFlightData();
 
  private:
         bfs::Mpu6500 imu;
