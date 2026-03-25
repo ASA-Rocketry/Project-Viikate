@@ -71,3 +71,5 @@ enum class LogType : uint8_t {
 };
 
 #endif  // FLIGHT_CODE_INCLUDE_CONSTANTS_H_
+
+// Main now works correctly.

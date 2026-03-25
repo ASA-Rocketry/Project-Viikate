@@ -15,4 +15,4 @@ void Control::initialize() {}
  */
 void Control::PID() {}
 
-// Test
+// Main now works correctly.

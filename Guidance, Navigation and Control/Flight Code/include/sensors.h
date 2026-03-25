@@ -28,3 +28,5 @@ class Sensors {
 };
 
 #endif  // FLIGHT_CODE_INCLUDE_SENSORS_H_
+
+// Main now works correctly.

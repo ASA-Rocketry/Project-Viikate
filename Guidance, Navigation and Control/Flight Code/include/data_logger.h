@@ -60,3 +60,5 @@ class DataLogger {
 };
 
 #endif  // FLIGHT_CODE_INCLUDE_DATA_LOGGER_H_
+
+// Main now works correctly.

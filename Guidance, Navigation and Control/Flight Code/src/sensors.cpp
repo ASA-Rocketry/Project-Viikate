@@ -76,3 +76,5 @@ float Sensors::readRotZ() {
 float Sensors::readAccelMagnitude() {
   return 4.44f;
 }
+
+// Main now works correctly.
