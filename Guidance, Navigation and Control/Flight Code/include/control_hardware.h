@@ -1,5 +1,5 @@
-#ifndef CONTROL_HARDWARE_H_
-#define CONTROL_HARDWARE_H_
+#ifndef FLIGHT_CODE_INCLUDE_CONTROL_HARDWARE_H_
+#define FLIGHT_CODE_INCLUDE_CONTROL_HARDWARE_H_
 
 #include <Arduino.h>
 #include "Servo.h"
@@ -32,4 +32,4 @@ class ControlHardware {
   Servo canard_servo4_;  /**< Servo for canard 4 */
 };
 
-#endif  // CONTROL_HARDWARE_H_
+#endif  // FLIGHT_CODE_INCLUDE_CONTROL_HARDWARE_H_

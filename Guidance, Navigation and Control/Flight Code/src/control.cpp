@@ -8,7 +8,7 @@ Control::Control() {}
 /** 
  * @brief Initializes the control system.
  */
-void Control::Initialize() {}
+void Control::initialize() {}
 
 /** 
  * @brief Executes the PID control loop.
