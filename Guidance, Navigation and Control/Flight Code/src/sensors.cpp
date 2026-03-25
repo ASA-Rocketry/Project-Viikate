@@ -13,7 +13,7 @@ Sensors::Sensors(DataLogger& data_logger)
   flight_data.altitude = 0.0f;
   flight_data.vertical_velocity = 0.0f;
   flight_data.accel_z = 0.0f;
-  flight_data.rotat_z = 0.0f;
+  flight_data.rot_z = 0.0f;
   flight_data.accel_magnitude = 0.0f;
   flight_data.time_ms = 0;
   flight_data.rbf_removed = false;
@@ -30,7 +30,7 @@ FlightData Sensors::readFlightData() {
     flight_data.altitude = readAltitude();
     flight_data.vertical_velocity = computeVerticalVelocity();
     flight_data.accel_z = readAccelZ();
-    flight_data.rotat_z = readRotatZ();
+    flight_data.rot_z = readRotZ();
     flight_data.accel_magnitude = readAccelMagnitude();
     flight_data.rbf_removed = digitalRead(constants::kRbfPin);
   } else {
@@ -68,7 +68,7 @@ float Sensors::readAccelZ() {
 }
 
 /** @brief Reads angular velocity around Z-axis. */
-float Sensors::readRotatZ() {
+float Sensors::readRotZ() {
   return imu.gyro_z_radps();
 }
 
@@ -76,5 +76,3 @@ float Sensors::readRotatZ() {
 float Sensors::readAccelMagnitude() {
   return 4.44f;
 }
-
-// Test

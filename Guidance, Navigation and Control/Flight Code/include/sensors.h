@@ -13,15 +13,18 @@ class Sensors {
  public:
   explicit Sensors(DataLogger& data_logger);
 
-    private: 
+  void initialize();
+  FlightData readFlightData();
+
+ private:
         bfs::Mpu6500 imu;
         FlightData flight_data;
         float readAltitude();
         float computeVerticalVelocity();
         float readAccelZ();
-        float readRotatZ();
+        float readRotZ();
         float readAccelMagnitude();
-        DataLogger& data_logger;
+        DataLogger& data_logger_;
 };
 
 #endif  // FLIGHT_CODE_INCLUDE_SENSORS_H_
