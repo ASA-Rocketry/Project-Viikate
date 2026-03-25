@@ -18,7 +18,7 @@ bool StateMachine::StagingCheck(const FlightData& data) const{
 }
 
 bool StateMachine::LiftoffCheck(const FlightData& data) const{
-    if (data.accel_z > (1.5f * 9.81f)) {
+    if (data.accel_z > (1.5f * constants::kGravity)) {
         return true;
     } else {
         return false;
