@@ -1,23 +1,23 @@
-#ifndef STATEMACHINE
-#define STATEMACHINE
+#ifndef FLIGHT_CODE_INCLUDE_STATE_MACHINE_H_
+#define FLIGHT_CODE_INCLUDE_STATE_MACHINE_H_
 
 #include "constants.h"
 
 /**
- * @file StateMachine.h
+ * @file state_machine.h
  * @brief Discrete flight states for the rocket.
  *
  * The state machine progresses monotonically through these states.
  * States should NEVER be skipped backward.
  */
-enum State {
-    IDLE,        // Rocket is not armed, RBF installed and no flight activity
-    LAUNCHPAD,   // RBF removed, armed and waiting for ignition
-    LIFTOFF,     // Motor burning, strong upward acceleration
-    COAST,       // Motor burnout, upward velocity and downward acceleration
-    APOGEE,      // Vertical velocity ~ 0 (transition state)
-    RDD,         // Descent detected (5 m/s), recovery device deployed
-    GROUND       // Rocket has landed and stopped moving
+enum class State {
+    kIdle,        // Rocket is not armed, RBF installed and no flight activity
+    kLaunchpad,   // RBF removed, armed and waiting for ignition
+    kLiftoff,     // Motor burning, strong upward acceleration
+    kCoast,       // Motor burnout, upward velocity and downward acceleration
+    kApogee,      // Vertical velocity ~ 0 (transition state)
+    kRdd,         // Descent detected (5 m/s), recovery device deployed
+    kGround       // Rocket has landed and stopped moving
 };
 
 
@@ -34,7 +34,7 @@ public:
     /**
      * @brief Construct a new StateMachine object.
      *
-     * Initializes the active state to IDLE.
+     * Initializes the active state to kIdle.
      */
     StateMachine();
 
@@ -61,26 +61,26 @@ private:
     /**
      * @brief Currently active flight state.
      */
-    State ActiveState;
+    State active_state;
 
     /**
      * @brief Timestamp when the current state was entered.
      *
      * Used for time-based gating and safety checks.
      */
-    unsigned long stateEntryTimeMs;
+    unsigned long state_entry_time_ms;
 
     /**
      * @brief Timestamp when liftoff occurred
      * 
      * Portrayed as ms from boot
      */
-    unsigned long liftoffTimeMs;
+    unsigned long liftoff_time_ms;
 
     /* ---------- State transition condition checks ---------- */
 
     /**
-     * @brief Check transition from IDLE to LAUNCHPAD.
+     * @brief Check transition from kIdle to kLaunchpad.
      *
      * Typical conditions:
      *  - RBF pin removed
@@ -89,7 +89,7 @@ private:
     bool StagingCheck(const FlightData& data) const;
 
     /**
-     * @brief Check transition from LAUNCHPAD to LIFTOFF.
+     * @brief Check transition from kLaunchpad to kLiftoff.
      *
      * Typical conditions:
      *  - Sustained upward acceleration above threshold
@@ -97,7 +97,7 @@ private:
     bool LiftoffCheck(const FlightData& data) const;
 
     /**
-     * @brief Check transition from LIFTOFF to COAST.
+     * @brief Check transition from kLiftoff to kCoast.
      *
      * Typical conditions:
      *  - Acceleration drops below 0 or near free-fall
@@ -106,7 +106,7 @@ private:
     bool BurnoutCheck(const FlightData& data) const;
 
     /**
-     * @brief Check transition from COAST to APOGEE.
+     * @brief Check transition from kCoast to kApogee.
      *
      * Typical conditions:
      *  - Vertical velocity crosses zero (within tolerance)
@@ -114,7 +114,7 @@ private:
     bool ApogeeCheck(const FlightData& data) const;
 
     /**
-     * @brief Check transition from APOGEE to RDD (descent).
+     * @brief Check transition from kApogee to kRdd (descent).
      *
      * Typical conditions:
      *  - Negative vertical velocity beyond threshold
@@ -125,7 +125,7 @@ private:
     bool RDDCheck(const FlightData& data) const;
 
     /**
-     * @brief Check transition from RDD to GROUND.
+     * @brief Check transition from kRdd to kGround.
      *
      * Typical conditions:
      *  - Vertical velocity ~ 0
@@ -142,4 +142,4 @@ private:
     void OnEnter(State newState, unsigned long timeMs);
 };
 
-#endif
+#endif  // FLIGHT_CODE_INCLUDE_STATE_MACHINE_H_

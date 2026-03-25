@@ -1,24 +1,24 @@
-#ifndef CONSTANTS
-#define CONSTANTS
+#ifndef FLIGHT_CODE_INCLUDE_CONSTANTS_H_
+#define FLIGHT_CODE_INCLUDE_CONSTANTS_H_
 
 #include <Arduino.h>
 // All constants are defined here 
-namespace Constants {
+namespace constants {
     // Physics
-    static constexpr float GRAVITY = 9.81f;
+    static constexpr float kGravity = 9.81f;
 
     // Pins
-    static constexpr int RBF_PIN = 2;
-    static constexpr int CS_PIN = 10;
-    static constexpr int SERVO1_PIN = 0;
-    static constexpr int SERVO2_PIN = 0;
-    static constexpr int SERVO3_PIN = 0;
-    static constexpr int SERVO4_PIN = 0;
+    static constexpr int kRbfPin = 2;
+    static constexpr int kCsPin = 10;
+    static constexpr int kServo1Pin = 0;
+    static constexpr int kServo2Pin = 0;
+    static constexpr int kServo3Pin = 0;
+    static constexpr int kServo4Pin = 0;
 
     // PID parameters
-    static constexpr float PROPORTIONAL = 0;
-    static constexpr float INTEGRATOR = 0;
-    static constexpr float DERIVATIVE = 0;
+    static constexpr float kProportional = 0;
+    static constexpr float kIntegrator = 0;
+    static constexpr float kDerivative = 0;
 }
 
 /**
@@ -30,27 +30,26 @@ namespace Constants {
  */
 struct FlightData {
     /** @brief [ms] System time since microcontroller boot. */
-    unsigned long timeMs;    
+    unsigned long time_ms;    
     
     /** @brief [m] Current altitude relative to ground level (barometric). */
-    float altitude;          
+    float altitude;           
     
     /** @brief [m/s] Vertical velocity component (positive values indicate ascent). */
-    float verticalVelocity;  
+    float vertical_velocity;  
     
     /** @brief [m/s^2] Linear acceleration along the rocket's Z-axis (gravity compensated). */
-    float accelZ;            
+    float accel_z;            
     
     /** @brief [rad/s] Angular velocity around the rocket's longitudinal (Z) axis. */
-    float rotatZ;            
+    float rot_z;            
     
     /** @brief [m/s^2] Total magnitude of the acceleration vector (G-force). */
-    float accelMagnitude;    
+    float accel_magnitude;    
     
     /** @brief Hardware interlock state: True if the "Remove Before Flight" pin is pulled. */
-    bool rbfRemoved;         
+    bool rbf_removed;
 };
-
 /**
  * @enum LogType
  * @brief Severity levels for system events and error reporting.
@@ -59,16 +58,16 @@ struct FlightData {
  */
 enum class LogType : uint8_t {
     /** @brief General system status or phase transition info (Level 0). */
-    INFO = 0,     
+    kInfo = 0,     
     
     /** @brief Non-critical anomaly; system can still proceed (Level 1). */
-    WARNING = 1,  
+    kWarning = 1,  
     
     /** @brief Recoverable error; a specific function might be degraded (Level 2). */
-    ERROR = 2,    
+    kError = 2,    
     
     /** @brief System-critical failure; flight safety or data integrity is at risk (Level 3). */
-    CRITICAL = 3  
+    kCritical = 3  
 };
 
-#endif
+#endif  // FLIGHT_CODE_INCLUDE_CONSTANTS_H_

@@ -1,5 +1,5 @@
-#ifndef SENSORS
-#define SENSORS
+#ifndef FLIGHT_CODE_INCLUDE_SENSORS_H_
+#define FLIGHT_CODE_INCLUDE_SENSORS_H_
 
 #include "Arduino.h"
 #include "MPU6500.h"
@@ -13,13 +13,13 @@ class Sensors {
 
     private: 
         bfs::Mpu6500 imu;
-        FlightData data_;
+        FlightData flight_data;
         float readAltitude();
         float computeVerticalVelocity();
         float readAccelZ();
         float readRotatZ();
         float readAccelMagnitude();
-        DataLogger& datalogger_;
+        DataLogger& data_logger;
 };
 
-#endif
+#endif  // FLIGHT_CODE_INCLUDE_SENSORS_H_

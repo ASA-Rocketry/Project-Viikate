@@ -3,21 +3,21 @@
 #include "state_machine.h"
 #include "sensors.h"
 
-DataLogger DataLogger_;
-StateMachine StateMachine_;
-Sensors Sensors_(DataLogger_);
+DataLogger data_logger;
+StateMachine state_machine;
+Sensors sensors(data_logger);
 
 void setup() {
   Serial.begin(115200); 
-  DataLogger_.initialize(); // Initialize this before anything else to log failures
-  Sensors_.initialize();
+  data_logger.initialize(); // Initialize this before anything else to log failures
+  sensors.initialize();
   // Controls_.initialize(); 
-  DataLogger_.logEvent(LogType::INFO, "SETUP COMPLETE");
+  data_logger.logEvent(LogType::kInfo, "SETUP COMPLETE");
 }
 
 void loop() {
-  FlightData data = Sensors_.readFlightData();
-  DataLogger_.logFlightData(data);
+  FlightData data = sensors.readFlightData();
+  data_logger.logFlightData(data);
   // Controller.control(data)
   delay(100);
  

@@ -1,5 +1,5 @@
-#ifndef CONTROL
-#define CONTROL
+#ifndef FLIGHT_CODE_INCLUDE_CONTROL_H_
+#define FLIGHT_CODE_INCLUDE_CONTROL_H_
 
 class Control {
     public: 
@@ -10,4 +10,4 @@ class Control {
     private:
 };
 
-#endif
+#endif  // FLIGHT_CODE_INCLUDE_CONTROL_H_

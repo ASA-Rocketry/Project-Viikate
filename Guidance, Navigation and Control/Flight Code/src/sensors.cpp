@@ -4,39 +4,40 @@
 #include "Wire.h"
 #include "MPU6500.h"
  
-Sensors::Sensors(DataLogger& datalogger) : imu(&Wire, bfs::Mpu6500::I2C_ADDR_PRIM),
-datalogger_(datalogger) {
-    data_.altitude = 0.0;
-    data_.verticalVelocity = 0.0;
-    data_.accelZ = 0.0;
-    data_.accelMagnitude = 0.0;
-    data_.timeMs = 0.0;
-    data_.rbfRemoved = false;
+Sensors::Sensors(DataLogger& data_logger)
+    : imu(&Wire, bfs::Mpu6500::I2C_ADDR_PRIM),
+      data_logger(data_logger) {
+    flight_data.altitude = 0.0;
+    flight_data.vertical_velocity = 0.0;
+    flight_data.accel_z = 0.0;
+    flight_data.accel_magnitude = 0.0;
+    flight_data.time_ms = 0.0;
+    flight_data.rbf_removed = false;
 }
 
 FlightData Sensors::readFlightData() {
-    data_.timeMs           = millis(); // Time is always read and linked with the flight data here. Not at the time of writing.
+    flight_data.time_ms = millis(); // Time is always read and linked with the flight data here. Not at the time of writing.
     if (imu.Read()){
-        data_.altitude         = readAltitude();
-        data_.verticalVelocity = computeVerticalVelocity();
-        data_.accelZ           = readAccelZ();
-        data_.rotatZ           = readRotatZ();
-        data_.accelMagnitude   = readAccelMagnitude();
-        data_.rbfRemoved       = digitalRead(Constants::RBF_PIN);
+        flight_data.altitude = readAltitude();
+        flight_data.vertical_velocity = computeVerticalVelocity();
+        flight_data.accel_z = readAccelZ();
+        flight_data.rot_z = readRotatZ();
+        flight_data.accel_magnitude = readAccelMagnitude();
+        flight_data.rbf_removed = digitalRead(constants::kRbfPin);
     }
     else {
-        datalogger_.logEvent(LogType::ERROR, "IMU READ FAILURE");
+        data_logger.logEvent(LogType::kError, "IMU READ FAILURE");
     }
-    return data_;
+    return flight_data;
 }
 
 void Sensors::initialize() {
     Wire.begin(); // Begin I2C transmission
     if (!imu.Begin()) {
-        datalogger_.logEvent(LogType::CRITICAL, "IMU INIT FAILURE");
+        data_logger.logEvent(LogType::kCritical, "IMU INIT FAILURE");
     }
     else {
-        datalogger_.logEvent(LogType::INFO, "IMU INITIALIZED");
+        data_logger.logEvent(LogType::kInfo, "IMU INITIALIZED");
     }
 }
 
@@ -49,7 +50,7 @@ float Sensors::computeVerticalVelocity() {
 }
 
 float Sensors::readAccelZ() {
-    return imu.accel_z_mps2() + Constants::GRAVITY; // Remove gravity
+    return imu.accel_z_mps2() + constants::kGravity; // Remove gravity
 }
 
 float Sensors::readRotatZ() {

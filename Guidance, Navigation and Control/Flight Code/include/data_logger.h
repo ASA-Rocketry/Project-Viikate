@@ -1,12 +1,12 @@
 /**
- * @file DataLogger.h
+ * @file data_logger.h
  * @brief Data logging system for rocket flight telemetry and events.
  * This class handles sequential file naming, SD card interfacing, and provides
  * throttled logging for system events.
  */
 
-#ifndef DATALOGGER
-#define DATALOGGER
+#ifndef FLIGHT_CODE_INCLUDE_DATA_LOGGER_H_
+#define FLIGHT_CODE_INCLUDE_DATA_LOGGER_H_
 
 #include <Arduino.h>
 #include "constants.h"
@@ -43,20 +43,20 @@ class DataLogger {
          * @brief Records system events with severity levels and built-in throttling.
          * * To prevent system lag, identical messages are ignored if they occur 
          * within a 50ms window.
-         * @param type The severity of the event (INFO, WARNING, ERROR, CRITICAL).
+         * @param type The severity of the event (kInfo, kWarning, kError, kCritical).
          * @param event The descriptive text message to be logged.
          */
         void logEvent(const LogType& type, const String& event);
 
     private: 
         /** @brief Flag to enable or disable telemetry logging (Not in use). */
-        bool logFlightData_ = true; 
+        bool log_flight_data = true; 
 
         /** @brief The dynamically generated filename for the telemetry log (e.g., "flight1.csv"). */
-        String flightFile_;
+        String flight_file;
 
         /** @brief The dynamically generated filename for the event log (e.g., "event1.csv"). */
-        String eventFile_;
+        String event_file;
 };
 
-#endif
+#endif  // FLIGHT_CODE_INCLUDE_DATA_LOGGER_H_

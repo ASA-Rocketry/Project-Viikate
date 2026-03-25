@@ -2,15 +2,15 @@
 #include "constants.h"
 
 StateMachine::StateMachine() {
-    ActiveState = IDLE;
+    active_state = State::kIdle;
 }
 
 State StateMachine::GetState() {
-    return ActiveState;
+    return active_state;
 }
 
 bool StateMachine::StagingCheck(const FlightData& data) const{
-    if (data.rbfRemoved and (data.accelZ < 1)) {
+    if (data.rbf_removed && (data.accel_z < 1.0f)) {
         return true;
     } else {
         return false;
@@ -18,7 +18,7 @@ bool StateMachine::StagingCheck(const FlightData& data) const{
 }
 
 bool StateMachine::LiftoffCheck(const FlightData& data) const{
-    if (data.accelZ > (1.5 * 9.81)) {
+    if (data.accel_z > (1.5f * 9.81f)) {
         return true;
     } else {
         return false;
@@ -26,7 +26,7 @@ bool StateMachine::LiftoffCheck(const FlightData& data) const{
 }
 
 bool StateMachine::BurnoutCheck(const FlightData& data) const{
-    if ((data.accelZ < 0)) {
+    if ((data.accel_z < 0.0f)) {
         return true;
     } else {
         return false;
@@ -34,7 +34,7 @@ bool StateMachine::BurnoutCheck(const FlightData& data) const{
 }
 
 bool StateMachine::ApogeeCheck(const FlightData& data) const{
-    if (data.verticalVelocity < 0) {
+    if (data.vertical_velocity < 0.0f) {
         return true;
     } else {
         return false;
@@ -42,7 +42,8 @@ bool StateMachine::ApogeeCheck(const FlightData& data) const{
 }
 
 bool StateMachine::RDDCheck(const FlightData& data) const{
-    if (((data.verticalVelocity < 5) and (data.accelZ < 0)) or (data.timeMs - liftoffTimeMs > 20000)) {
+    if (((data.vertical_velocity < 5.0f) && (data.accel_z < 0.0f)) ||
+        (data.time_ms - liftoff_time_ms > 20000)) {
         return true;
     } else {
         return false;
@@ -50,7 +51,8 @@ bool StateMachine::RDDCheck(const FlightData& data) const{
 }
 
 bool StateMachine::LandCheck(const FlightData& data) const{
-    if (((data.verticalVelocity > -1 && data.verticalVelocity < 1)) and (data.accelMagnitude < 1)) {
+    if (((data.vertical_velocity > -1.0f && data.vertical_velocity < 1.0f)) &&
+        (data.accel_magnitude < 1.0f)) {
         return true;
     } else {
         return false;
@@ -58,68 +60,68 @@ bool StateMachine::LandCheck(const FlightData& data) const{
 }
 
 State StateMachine::update(const FlightData& data){
-    State nextState = ActiveState;
+    State next_state = active_state;
 
-        switch (ActiveState) {
-            case IDLE:
-                if (StagingCheck(data)) nextState = LAUNCHPAD;
+        switch (active_state) {
+            case State::kIdle:
+                if (StagingCheck(data)) next_state = State::kLaunchpad;
                 break;
 
-            case LAUNCHPAD:
-                if (LiftoffCheck(data)) nextState = LIFTOFF;
+            case State::kLaunchpad:
+                if (LiftoffCheck(data)) next_state = State::kLiftoff;
                 break;
 
-            case LIFTOFF:
-                if (BurnoutCheck(data)) nextState = COAST;
+            case State::kLiftoff:
+                if (BurnoutCheck(data)) next_state = State::kCoast;
                 break;
 
-            case COAST:
-                if (ApogeeCheck(data)) nextState = APOGEE;
+            case State::kCoast:
+                if (ApogeeCheck(data)) next_state = State::kApogee;
                 break;
 
-            case APOGEE:
-                if (RDDCheck(data)) nextState = RDD;
+            case State::kApogee:
+                if (RDDCheck(data)) next_state = State::kRdd;
                 break;
 
-            case RDD:
-                if (LandCheck(data)) nextState = GROUND;
+            case State::kRdd:
+                if (LandCheck(data)) next_state = State::kGround;
                 break;
 
             default:
                 break;
         }
 
-        if (nextState != ActiveState) {
-        OnEnter(nextState, data.timeMs);
-        ActiveState = nextState;
+        if (next_state != active_state) {
+        OnEnter(next_state, data.time_ms);
+        active_state = next_state;
     }
-    return ActiveState;
+    return active_state;
 }
 
-void StateMachine::OnEnter(State newState, unsigned long timeMs) {
-    stateEntryTimeMs = timeMs;
+void StateMachine::OnEnter(State new_state, unsigned long time_ms) {
+    state_entry_time_ms = time_ms;
     
-    switch(newState) {
-        case IDLE:
+    switch(new_state) {
+        case State::kIdle:
             break;
 
-        case LAUNCHPAD:
+        case State::kLaunchpad:
             break;
 
-        case LIFTOFF:
-            liftoffTimeMs = timeMs;
+        case State::kLiftoff:
+            liftoff_time_ms = time_ms;
             break;
 
-        case COAST:
+        case State::kCoast:
             break;
 
-        case APOGEE:
+        case State::kApogee:
             break;
 
-        case RDD:
+        case State::kRdd:
             break;
 
-        case GROUND:
+        case State::kGround:
             break;
 
         default:
