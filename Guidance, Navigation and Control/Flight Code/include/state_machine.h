@@ -1,7 +1,7 @@
 #ifndef STATEMACHINE
 #define STATEMACHINE
 
-#include "Constants.h"
+#include "constants.h"
 
 /**
  * @file StateMachine.h

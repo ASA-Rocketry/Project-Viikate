@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include <SD.H>
 #include <SPI.h>
-#include "DataLogger.h"
-#include "Constants.h"
+#include "data_logger.h"
+#include "constants.h"
 
 DataLogger::DataLogger(){}
 

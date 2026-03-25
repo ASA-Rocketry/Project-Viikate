@@ -1,5 +1,5 @@
-#include "StateMachine.h"
-#include "Constants.h"
+#include "state_machine.h"
+#include "constants.h"
 
 StateMachine::StateMachine() {
     ActiveState = IDLE;

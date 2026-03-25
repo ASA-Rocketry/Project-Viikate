@@ -1,8 +1,6 @@
 #ifndef CONTROL
 #define CONTROL
 
-
-
 class Control {
     public: 
         Control();

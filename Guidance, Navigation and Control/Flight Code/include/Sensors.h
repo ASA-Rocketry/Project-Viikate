@@ -3,7 +3,7 @@
 
 #include "Arduino.h"
 #include "MPU6500.h"
-#include "DataLogger.h"
+#include "data_logger.h"
 
 class Sensors {
     public: 

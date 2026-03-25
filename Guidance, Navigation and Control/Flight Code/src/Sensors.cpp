@@ -1,6 +1,6 @@
-#include "Sensors.h"
+#include "sensors.h"
 #include "Arduino.h"
-#include "Constants.h"
+#include "constants.h"
 #include "Wire.h"
 #include "MPU6500.h"
  
