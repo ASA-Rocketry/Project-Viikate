@@ -37,12 +37,33 @@ struct FlightData {
     
     /** @brief [m/s] Vertical velocity component (positive values indicate ascent). */
     float vertical_velocity;  
-    
+
+    /** @brief [m/s^2] Linear acceleration along the rocket's X-axis. */
+    float accel_x;
+
+    /** @brief [m/s^2] Linear acceleration along the rocket's Y-axis. */
+    float accel_y;
+
     /** @brief [m/s^2] Linear acceleration along the rocket's Z-axis (gravity compensated). */
     float accel_z;            
     
+    /** @brief [rad/s] Angular velocity around the rocket's X-axis. */
+    float rot_x;
+
+    /** @brief [rad/s] Angular velocity around the rocket's Y-axis. */
+    float rot_y;
+
     /** @brief [rad/s] Angular velocity around the rocket's longitudinal (Z) axis. */
     float rot_z;            
+
+    /** @brief [\muT] Strength of magnetig field on the rocket's X-Axis */
+    float mag_x;
+
+    /** @brief [\muT] Strength of magnetig field on the rocket's Y-Axis */
+    float mag_y;
+
+    /** @brief [\muT] Strength of magnetig field on the rocket's Z-Axis */
+    float mag_z;
     
     /** @brief [m/s^2] Total magnitude of the acceleration vector (G-force). */
     float accel_magnitude;    
