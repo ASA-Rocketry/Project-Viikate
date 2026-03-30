@@ -11,12 +11,12 @@
 Sensors::Sensors(DataLogger& data_logger)
     : imu(&Wire, bfs::Mpu6500::I2C_ADDR_PRIM), data_logger_(data_logger) {
   flight_data.altitude = 0.0f;
-  flight_data.vertical_velocity = 0.0f;
-  flight_data.accel_z = 0.0f;
-  flight_data.rot_z = 0.0f;
-  flight_data.accel_magnitude = 0.0f;
-  flight_data.time_ms = 0;
-  flight_data.rbf_removed = false;
+  flight_data.verticalVelocity = 0.0f;
+  flight_data.accZ = 0.0f;
+  flight_data.rotZ = 0.0f;
+  flight_data.accelMagnitude = 0.0f;
+  flight_data.timeMs = 0;
+  flight_data.rbfRemoved = false;
 }
 
 /**
@@ -24,15 +24,15 @@ Sensors::Sensors(DataLogger& data_logger)
  * @return FlightData structure with the latest sensor measurements.
  */
 FlightData Sensors::ReadFlightData() {
-  flight_data.time_ms = millis();  // Timestamp linked to flight data
+  flight_data.timeMs = millis();  // Timestamp linked to flight data
 
   if (imu.Read()) {
     flight_data.altitude = readAltitude();
-    flight_data.vertical_velocity = computeVerticalVelocity();
-    flight_data.accel_z = readAccelZ();
-    flight_data.rot_z = readRotZ();
-    flight_data.accel_magnitude = readAccelMagnitude();
-    flight_data.rbf_removed = digitalRead(constants::kRbfPin);
+    flight_data.verticalVelocity = computeVerticalVelocity();
+    flight_data.accZ = readAccelZ();
+    flight_data.rotZ = readRotZ();
+    flight_data.accelMagnitude = readAccelMagnitude();
+    flight_data.rbfRemoved = digitalRead(constants::kRbfPin);
   } else {
     data_logger_.LogEvent(LogType::kError, "IMU READ FAILURE");
   }

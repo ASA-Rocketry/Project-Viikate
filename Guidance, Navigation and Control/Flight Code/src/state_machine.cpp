@@ -10,7 +10,7 @@ State StateMachine::GetState() {
 }
 
 bool StateMachine::StagingCheck(const FlightData& data) const{
-    if (data.rbf_removed && (data.accel_z < 1.0f)) {
+    if (data.rbfRemoved && (data.accZ < 1.0f)) {
         return true;
     } else {
         return false;
@@ -18,7 +18,7 @@ bool StateMachine::StagingCheck(const FlightData& data) const{
 }
 
 bool StateMachine::LiftoffCheck(const FlightData& data) const{
-    if (data.accel_z > (1.5f * constants::kGravity)) {
+    if (data.accZ > (1.5f * constants::kGravity)) {
         return true;
     } else {
         return false;
@@ -26,7 +26,7 @@ bool StateMachine::LiftoffCheck(const FlightData& data) const{
 }
 
 bool StateMachine::BurnoutCheck(const FlightData& data) const{
-    if ((data.accel_z < 0.0f)) {
+    if ((data.accZ < 0.0f)) {
         return true;
     } else {
         return false;
@@ -34,7 +34,7 @@ bool StateMachine::BurnoutCheck(const FlightData& data) const{
 }
 
 bool StateMachine::ApogeeCheck(const FlightData& data) const{
-    if (data.vertical_velocity < 0.0f) {
+    if (data.verticalVelocity < 0.0f) {
         return true;
     } else {
         return false;
@@ -42,8 +42,8 @@ bool StateMachine::ApogeeCheck(const FlightData& data) const{
 }
 
 bool StateMachine::RDDCheck(const FlightData& data) const{
-    if (((data.vertical_velocity < 5.0f) && (data.accel_z < 0.0f)) ||
-        (data.time_ms - liftoff_time_ms > 20000)) {
+    if (((data.verticalVelocity < 5.0f) && (data.accZ < 0.0f)) ||
+        (data.timeMs - liftoff_time_ms > 20000)) {
         return true;
     } else {
         return false;
@@ -51,8 +51,8 @@ bool StateMachine::RDDCheck(const FlightData& data) const{
 }
 
 bool StateMachine::LandCheck(const FlightData& data) const{
-    if (((data.vertical_velocity > -1.0f && data.vertical_velocity < 1.0f)) &&
-        (data.accel_magnitude < 1.0f)) {
+    if (((data.verticalVelocity > -1.0f && data.verticalVelocity < 1.0f)) &&
+        (data.accelMagnitude < 1.0f)) {
         return true;
     } else {
         return false;
@@ -92,7 +92,7 @@ State StateMachine::Update(const FlightData& data){
         }
 
         if (next_state != active_state) {
-        OnEnter(next_state, data.time_ms);
+        OnEnter(next_state, data.timeMs);
         active_state = next_state;
     }
     return active_state;

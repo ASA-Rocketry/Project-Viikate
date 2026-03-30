@@ -30,46 +30,46 @@ namespace constants {
  */
 struct FlightData {
     /** @brief [ms] System time since microcontroller boot. */
-    unsigned long time_ms;    
+    unsigned long timeMs;    
     
     /** @brief [m] Current altitude relative to ground level (barometric). */
     float altitude;           
     
     /** @brief [m/s] Vertical velocity component (positive values indicate ascent). */
-    float vertical_velocity;  
+    float verticalVelocity;  
 
     /** @brief [m/s^2] Linear acceleration along the rocket's X-axis. */
-    float accel_x;
+    float accX;
 
     /** @brief [m/s^2] Linear acceleration along the rocket's Y-axis. */
-    float accel_y;
+    float accY;
 
     /** @brief [m/s^2] Linear acceleration along the rocket's Z-axis (gravity compensated). */
-    float accel_z;            
+    float accZ;            
     
     /** @brief [rad/s] Angular velocity around the rocket's X-axis. */
-    float rot_x;
+    float rotX;
 
     /** @brief [rad/s] Angular velocity around the rocket's Y-axis. */
-    float rot_y;
+    float rotY;
 
     /** @brief [rad/s] Angular velocity around the rocket's longitudinal (Z) axis. */
-    float rot_z;            
+    float rotZ;            
 
-    /** @brief [\muT] Strength of magnetig field on the rocket's X-Axis */
-    float mag_x;
+    /** @brief [\muT] Strength of magnetic field on the rocket's X-Axis */
+    float magX;
 
-    /** @brief [\muT] Strength of magnetig field on the rocket's Y-Axis */
-    float mag_y;
+    /** @brief [\muT] Strength of magnetic field on the rocket's Y-Axis */
+    float magY;
 
-    /** @brief [\muT] Strength of magnetig field on the rocket's Z-Axis */
-    float mag_z;
+    /** @brief [\muT] Strength of magnetic field on the rocket's Z-Axis */
+    float magZ;
     
     /** @brief [m/s^2] Total magnitude of the acceleration vector (G-force). */
-    float accel_magnitude;    
+    float accelMagnitude;    
     
     /** @brief Hardware interlock state: True if the "Remove Before Flight" pin is pulled. */
-    bool rbf_removed;
+    bool rbfRemoved;
 };
 /**
  * @enum LogType

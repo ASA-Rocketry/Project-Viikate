@@ -35,19 +35,19 @@ void DataLogger::Initialize(){
 void DataLogger::LogFlightData(const FlightData& data){
     File flight_data_file = SD.open(flight_file_, FILE_WRITE); // Flight Data File
     if (flight_data_file){
-        flight_data_file.print(data.time_ms);
+        flight_data_file.print(data.timeMs);
         flight_data_file.print(",");
         flight_data_file.print(data.altitude);
         flight_data_file.print(",");
-        flight_data_file.print(data.vertical_velocity);
+        flight_data_file.print(data.verticalVelocity);
         flight_data_file.print(",");
-        flight_data_file.print(data.accel_z);
+        flight_data_file.print(data.accZ);
         flight_data_file.print(",");
-        flight_data_file.print(data.rot_z);
+        flight_data_file.print(data.rotZ);
         flight_data_file.print(",");
-        flight_data_file.print(data.accel_magnitude);
+        flight_data_file.print(data.accelMagnitude);
         flight_data_file.print(",");
-        flight_data_file.println(data.rbf_removed);
+        flight_data_file.println(data.rbfRemoved);
         flight_data_file.close();
     }
 }
