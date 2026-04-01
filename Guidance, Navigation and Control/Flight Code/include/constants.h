@@ -16,9 +16,28 @@ namespace constants {
     static constexpr int kServo4Pin = 0;
 
     // PID parameters
-    static constexpr float kProportional = 0;
-    static constexpr float kIntegrator = 0;
-    static constexpr float kDerivative = 0;
+    static constexpr float kProportional = 0.0f;
+    static constexpr float kIntegrator = 0.0f;
+    static constexpr float kDerivative = 0.0f;
+
+    // PID output limits
+    static constexpr float kMaxControlAngle = 30.0f;  // Max canard deflection in degrees
+    static constexpr float kMinControlAngle = -30.0f;  // Min canard deflection in degrees
+
+    // PID effective input range
+    static constexpr float kPidMinAngle = -30.0f;
+    static constexpr float kPidMaxAngle = 30.0f;
+
+    // Servo mapping limits (for ControlHardware)
+    static constexpr float kServoMinAngle = 60.0f;  // Servo minimum command angle in degrees
+    static constexpr float kServoMaxAngle = 120.0f;  // Servo maximum command angle in degrees
+    static constexpr float kServoNeutralAngle = 90.0f;  // Servo neutral command angle
+
+    // servo trimming parameters
+    static constexpr float kServoTrim1 = 0.0f;
+    static constexpr float kServoTrim2 = 0.0f;
+    static constexpr float kServoTrim3 = 0.0f;
+    static constexpr float kServoTrim4 = 0.0f;
 }
 
 /**
