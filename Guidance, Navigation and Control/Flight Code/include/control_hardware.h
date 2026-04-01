@@ -17,7 +17,7 @@ class ControlHardware {
   ControlHardware();
 
   /** @brief Initializes all servo hardware. */
-  void Initialize();
+  bool Initialize();
 
   /**
    * @brief Sets the target angle for all canard servos.

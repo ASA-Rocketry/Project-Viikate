@@ -89,6 +89,6 @@ void Control::PID(float set_angle_deg, float current_angle_deg) {
   previous_error_ = angular_error;
   previous_time_ms_ = current_time_ms;
 
-  // Command servos: maps [-30,30]° to [60,120]° servo range
+  // Command servos: maps [-30,30]° to [60,120]° servo range inside of the ControlHardware class
   control_hardware_.SetCanardAngle(saturated_output);
 }

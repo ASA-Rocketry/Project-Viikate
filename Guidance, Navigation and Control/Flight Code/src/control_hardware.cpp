@@ -2,7 +2,7 @@
 
 ControlHardware::ControlHardware() {}
 
-void ControlHardware::Initialize() {
+bool ControlHardware::Initialize() {
   // NOTE: Assumes servo pins are defined in constants.h
   canard_servo1_.attach(constants::kServo1Pin);
   canard_servo2_.attach(constants::kServo2Pin);
@@ -10,7 +10,9 @@ void ControlHardware::Initialize() {
   canard_servo4_.attach(constants::kServo4Pin);
 
   // Set all servos to neutral 90 degree position
-  SetCanardAngle(constants::kServoNeutralAngle);  // 0° PID input maps to 90° servo
+  SetCanardAngle(constants::kServoNeutralAngle);
+
+  return true;
 }
 
 void ControlHardware::SetCanardAngle(float pid_angle_degrees) {
