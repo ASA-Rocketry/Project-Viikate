@@ -15,6 +15,11 @@ namespace constants {
     static constexpr int kServo3Pin = 0;
     static constexpr int kServo4Pin = 0;
 
+    static const int kMISOPin = 12;   
+    static const int kMOSIPin = 11;
+    static const int kSCKPin  = 13;  
+    static const int kCSPin   = 10; 
+
     // PID parameters
     static constexpr float kProportional = 0;
     static constexpr float kIntegrator = 0;

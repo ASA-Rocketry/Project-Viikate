@@ -9,6 +9,7 @@ Sensors sensors(data_logger);
 
 void setup() {
   Serial.begin(115200); 
+  while (!Serial);
   data_logger.Initialize(); // Initialize this before anything else to log failures
   sensors.Initialize();
   // Controls_.initialize(); 
@@ -23,6 +24,14 @@ void setup() {
 void loop() {
   FlightData data = sensors.ReadFlightData();
   data_logger.LogFlightData(data);
+  // Print values to Serial
+  Serial.print("Altitude: "); Serial.println(data.altitude);
+  Serial.print("Vertical Velocity: "); Serial.println(data.verticalVelocity);
+  Serial.print("AccelZ: "); Serial.println(data.accZ);
+  Serial.print("RotZ: "); Serial.println(data.rotZ);
+  Serial.print("AccelMagnitude: "); Serial.println(data.accelMagnitude);
+  Serial.print("RBF Removed: "); Serial.println(data.rbfRemoved);
+  Serial.println("--------------------");
   // Controller.control(data)
   delay(100);
 }
