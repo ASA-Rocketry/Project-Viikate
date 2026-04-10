@@ -8,17 +8,16 @@ namespace constants {
     static constexpr float kGravity = 9.81f;
 
     // Pins
-    static constexpr int kRbfPin = 2;
-    static constexpr int kCsPin = 10;
     static constexpr int kServo1Pin = 0;
     static constexpr int kServo2Pin = 0;
     static constexpr int kServo3Pin = 0;
     static constexpr int kServo4Pin = 0;
 
-    static const int kMISOPin = 12;   
-    static const int kMOSIPin = 11;
-    static const int kSCKPin  = 13;  
-    static const int kCSPin   = 10; 
+    static constexpr int kRbfPin = 2;
+    static constexpr int kCsPin = 10;
+    static constexpr int kMISOPin = 12;   
+    static constexpr int kMOSIPin = 11;
+    static constexpr int kSCKPin  = 13;  
 
     // PID parameters
     static constexpr float kProportional = 0;
