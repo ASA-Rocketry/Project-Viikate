@@ -97,6 +97,7 @@ void Sensors::initialize_IMU() {
 
         Serial.println("ISM330DHCX IMU initialized successfully.");
 }
+
 void Sensors::initializeMagnetometer() {
         if (!mag.begin(Wire)) {
                 Serial.println("Failed to initialize MMC5983MA magnetometer!");
@@ -175,9 +176,9 @@ Sensors::IMU_Data_ Sensors::readIMU() {
         imu_data.gx = gyroscope[0];
         imu_data.gy = gyroscope[1];
         imu_data.gz = gyroscope[2];
-        return imu_data;
-        
+        return imu_data;       
 }
+
 Sensors::Mag_Data_ Sensors::readMagnetometer(){
         
         mag.readFieldsXYZ(&rawValueX_, &rawValueY_, &rawValueZ_);
@@ -218,8 +219,6 @@ float Sensors::_getAltitude(float pressure, float temperature) {
         const float SIMPLIFIED_CONSTANTS = GAS_CONSTANT / (MOLAR_MASS_AIR * GRAVITY); // Precompute constant part of the formula
         
         return SIMPLIFIED_CONSTANTS * temperature * logf(SEA_LEVEL_PRESSURE / pressure);
-
-
 };
 
 float Sensors::readBarometer() {

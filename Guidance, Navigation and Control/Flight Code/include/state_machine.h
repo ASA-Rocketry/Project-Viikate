@@ -2,6 +2,7 @@
 #define FLIGHT_CODE_INCLUDE_STATE_MACHINE_H_
 
 #include "constants.h"
+#include "data_logger.h" 
 
 /**
  * @file state_machine.h
@@ -20,8 +21,6 @@ enum class State {
     kGround       // Rocket has landed and stopped moving
 };
 
-
-
 /**
  * @brief Rocket flight state machine.
  *
@@ -36,7 +35,7 @@ public:
      *
      * Initializes the active state to kIdle.
      */
-    StateMachine();
+    StateMachine(DataLogger& data_logger);
 
     /**
      * @brief Update the StateMachine instance with new flight data.
@@ -140,6 +139,8 @@ private:
      * Use this for resetting timers, latching events, etc.
      */
     void OnEnter(State newState, unsigned long timeMs);
+
+    DataLogger& data_logger_; 
 };
 
 #endif  // FLIGHT_CODE_INCLUDE_STATE_MACHINE_H_

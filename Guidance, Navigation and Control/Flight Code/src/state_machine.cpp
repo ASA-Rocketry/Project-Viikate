@@ -1,7 +1,7 @@
 #include "state_machine.h"
 #include "constants.h"
 
-StateMachine::StateMachine() {
+StateMachine::StateMachine(DataLogger& data_logger): data_logger_(data_logger){
     active_state = State::kIdle;
 }
 
@@ -122,6 +122,7 @@ void StateMachine::OnEnter(State new_state, unsigned long time_ms) {
             break;
 
         case State::kGround:
+            data_logger_.Close(); // Close SD card
             break;
 
         default:
