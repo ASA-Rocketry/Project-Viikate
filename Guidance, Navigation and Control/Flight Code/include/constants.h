@@ -68,6 +68,9 @@ struct FlightData {
 
     /** @brief [\muT] Strength of magnetic field on the rocket's Z-Axis */
     float magZ;
+
+    /** @brief [rad] Magnetic heading relative to true north. */
+    float heading;
     
     /** @brief [m/s^2] Total magnitude of the acceleration vector (G-force). */
     float accelMagnitude;    

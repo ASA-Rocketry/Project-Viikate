@@ -58,25 +58,38 @@ Sensors::Sensors(DataLogger& data_logger)
  * @return FlightData structure with the latest sensor measurements.
  */
 FlightData Sensors::ReadFlightData() {
-  flight_data.timeMs = millis();  // Timestamp linked to flight data
+  flight_data.timeMs = millis();
 
-  flight_data.altitude = readAltitude();
-  flight_data.verticalVelocity = computeVerticalVelocity();
-  flight_data.accX = readIMU().ax;
-  flight_data.accY = readIMU().ay;
-  flight_data.accZ = readAccelZ();
-  flight_data.rotX = readIMU().gx;
-  flight_data.rotY = readIMU().gy;
-  flight_data.rotZ = readRotZ();
-  flight_data.magX = readMagnetometer().mx;
-  flight_data.magY = readMagnetometer().my;
-  flight_data.magZ = readMagnetometer().mz;
-  flight_data.accelMagnitude = readAccelMagnitude();
+  // Read each sensor ONCE
+  IMU_Data_ imu_data = readIMU();
+  Mag_Data_ mag_data = readMagnetometer();
+
+  flight_data.altitude         = readAltitude();
+  flight_data.verticalVelocity = computeVerticalVelocity(imu_data.az);
+
+  flight_data.accX = imu_data.ax;
+  flight_data.accY = imu_data.ay;
+  flight_data.accZ = imu_data.az;
+
+  flight_data.rotX = imu_data.gx;
+  flight_data.rotY = imu_data.gy;
+  flight_data.rotZ = imu_data.gz;
+
+  flight_data.magX    = mag_data.mx;
+  flight_data.magY    = mag_data.my;
+  flight_data.magZ    = mag_data.mz;
+  flight_data.heading = mag_data.heading;
+
+  flight_data.accelMagnitude = sqrt(
+    pow(imu_data.ax, 2) +
+    pow(imu_data.ay, 2) +
+    pow(imu_data.az, 2)
+  );
+
   flight_data.rbfRemoved = digitalRead(constants::kRbfPin);
 
   return flight_data;
 }
-
 /**
  * @brief Initializes the sensors, including I2C and IMU.
  */
@@ -102,11 +115,11 @@ void Sensors::initialize_IMU() {
         } 
         imu.ACC_SetFullScale(16);
         imu.GYRO_SetFullScale(2000);
-        imu.FIFO_Set_Mode(ISM330DHCX_STREAM_MODE);   // continuous overwrite
-        imu.FIFO_ACC_Set_BDR(104);
-        imu.FIFO_GYRO_Set_BDR(104);
-        imu.ACC_SetOutputDataRate(104);
-        imu.GYRO_SetOutputDataRate(104);
+        imu.FIFO_Set_Mode(ISM330DHCX_STREAM_TO_FIFO_MODE);   // continuous overwrite
+        imu.FIFO_ACC_Set_BDR(1000);
+        imu.FIFO_GYRO_Set_BDR(1000);
+        imu.ACC_SetOutputDataRate(1000);
+        imu.GYRO_SetOutputDataRate(1000);
         imu.ACC_Enable();
         imu.GYRO_Enable();
 
@@ -150,34 +163,20 @@ float Sensors::readAltitude() {
 
 /** @brief Computes vertical velocity (stub implementation). */
 // Compute vertical velocity from IMU Z-axis acceleration
-float Sensors::computeVerticalVelocity() {
+float Sensors::computeVerticalVelocity(float az) {
     verticalVelocity_ = 0.0f; // Reset velocity for this example
     unsigned long now = flight_data.timeMs;
     float dt = (lastTimeMs_ > 0) ? (now - lastTimeMs_) / 1000.0f : 0.0f; // seconds
     lastTimeMs_ = now;
-
-    float az = readAccelZ(); // acceleration in m/s^2, gravity-compensated
-
     // Integrate acceleration to get velocity
     verticalVelocity_ += az * dt;
 
     return verticalVelocity_;
 }
 
-/** @brief Reads linear acceleration along Z-axis, gravity-compensated. */
-float Sensors::readAccelZ() {
-  float accel_z_mps2 = readIMU().az;
-  return accel_z_mps2 + constants::kGravity;
-}
-
-/** @brief Reads angular velocity around Z-axis. */
-float Sensors::readRotZ() {
-  return readIMU().gz;
-}
-
 /** @brief Computes total acceleration magnitude (stub implementation). */
-float Sensors::readAccelMagnitude() {
-  return 4.44f;
+float Sensors::readAccelMagnitude(IMU_Data_ imu_data) {
+  return sqrt(imu_data.ax * imu_data.ax + imu_data.ay * imu_data.ay + imu_data.az * imu_data.az);
 }
 
 // reads raw sensor data
@@ -198,6 +197,11 @@ Sensors::IMU_Data_ Sensors::readIMU() {
         imu_data.gy = gyroscope[1];
         imu_data.gz = gyroscope[2];
         return imu_data;     
+        uint16_t fifo_samples = 0;
+        ISM330DHCXStatusTypeDef status = imu.FIFO_Get_Num_Samples(&fifo_samples);
+
+        Serial.print("FIFO status: ");  Serial.println(status);   // 0 = OK, 1 = ERROR
+        Serial.print("FIFO samples: "); Serial.println(fifo_samples);
 
 
       } else {
@@ -218,13 +222,13 @@ Sensors::Mag_Data_ Sensors::readMagnetometer(){
         if (mag_initialized == true ) {
             mag.getMeasurementXYZ(&rawValueX_, &rawValueY_, &rawValueZ_);
             //mag.readFieldsXYZ(&rawValueX_, &rawValueY_, &rawValueZ_);
-            scaledX = rawValueX_ - 131072.0;
+            scaledX = (double)rawValueX_ - 131072.0;
             scaledX /= 131072.0;
 
-            scaledY = rawValueY_ - 131072.0;
+            scaledY = (double)rawValueY_ - 131072.0;
             scaledY /= 131072.0;
 
-            scaledZ = rawValueZ_ - 131072.0;
+            scaledZ = (double)rawValueZ_ - 131072.0;
             scaledZ /= 131072.0;
 
             heading = atan2(scaledX, 0 - scaledY);
@@ -240,6 +244,7 @@ Sensors::Mag_Data_ Sensors::readMagnetometer(){
             mag_data.mx = scaledX;
             mag_data.my = scaledY;
             mag_data.mz = scaledZ;
+            mag_data.heading = heading;
             return mag_data;
             
         } else {
@@ -248,6 +253,7 @@ Sensors::Mag_Data_ Sensors::readMagnetometer(){
             mag_data.mx = NAN;
             mag_data.my = NAN;
             mag_data.mz = NAN;
+            mag_data.heading = NAN;
 
             return mag_data;
         }

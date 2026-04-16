@@ -27,12 +27,6 @@ class Sensors {
         // flight data
                 FlightData flight_data;
 
-                float readAltitude();
-                float computeVerticalVelocity();
-                float readAccelZ();
-                float readRotZ();
-                float readAccelMagnitude();
-
                 // IMU data
                 struct IMU_Data_ {
                         int32_t ax;
@@ -47,10 +41,17 @@ class Sensors {
                         int32_t mx;
                         int32_t my;
                         int32_t mz;
+                        int32_t heading;
                 };
 
                 IMU_Data_ imu_data_;
                 Mag_Data_ mag_data_;
+
+                float readAccelMagnitude(IMU_Data_ imu_data);
+                float readAltitude();
+                float computeVerticalVelocity(float az);
+                // float readAccelZ();
+                // float readRotZ();
 
                 float _getAltitude(float pressure, float temperature);
                 float readBarometer();

@@ -9,7 +9,6 @@ Sensors sensors(data_logger);
 
 void setup() {
   Serial.begin(115200); 
-  while (!Serial);
   data_logger.Initialize(); // Initialize this before anything else to log failures
   sensors.Initialize();
   // Controls_.initialize(); 
@@ -33,8 +32,8 @@ void loop() {
   Serial.print("RBF Removed: "); Serial.println(data.rbfRemoved);
   Serial.print("Acc (x, y, z): "); Serial.print(data.accX); Serial.print(", "); Serial.print(data.accY); Serial.print(", "); Serial.println(data.accZ);
   Serial.print("Gyro (x, y, z): "); Serial.print(data.rotX); Serial.print(", "); Serial.print(data.rotY); Serial.print(", "); Serial.println(data.rotZ);
-  Serial.print("Mag: "); Serial.print(data.magX); Serial.print(", "); Serial.print(data.magY); Serial.print(", "); Serial.println(data.magZ);
+  Serial.print("Mag: "); Serial.print(data.magX); Serial.print(", "); Serial.print(data.magY); Serial.print(", "); Serial.println(data.magZ), Serial.print("Heading: "); Serial.println(data.heading);
   Serial.println("--------------------");
+  // delay(50);
   // Controller.control(data)
-  delay(100);
 }
