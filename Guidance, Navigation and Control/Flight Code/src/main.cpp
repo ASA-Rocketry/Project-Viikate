@@ -4,7 +4,7 @@
 #include "sensors.h"
 
 DataLogger data_logger;
-StateMachine state_machine;
+StateMachine state_machine(data_logger);
 Sensors sensors(data_logger);
 
 void setup() {
