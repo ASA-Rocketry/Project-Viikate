@@ -38,10 +38,10 @@ class Sensors {
                 };
 
                 struct Mag_Data_ {
-                        int32_t mx;
-                        int32_t my;
-                        int32_t mz;
-                        int32_t heading;
+                        double mx;
+                        double my;
+                        double mz;
+                        double heading;
                 };
 
                 IMU_Data_ imu_data_;

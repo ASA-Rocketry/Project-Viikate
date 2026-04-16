@@ -32,10 +32,10 @@ uint32_t rawValueX_ = 0;
 uint32_t rawValueY_ = 0;
 uint32_t rawValueZ_ = 0; 
 
-float scaledX = 0;
-float scaledY = 0;
-float scaledZ = 0;
-float heading = 0;
+double scaledX = 0;
+double scaledY = 0;
+double scaledZ = 0;
+double heading = 0;
 
 /**
  * @brief Constructs a Sensors object.
