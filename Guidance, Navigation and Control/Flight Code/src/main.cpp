@@ -34,6 +34,6 @@ void loop() {
   Serial.print("Gyro (x, y, z): "); Serial.print(data.rotX); Serial.print(", "); Serial.print(data.rotY); Serial.print(", "); Serial.println(data.rotZ);
   Serial.print("Mag: "); Serial.print(data.magX); Serial.print(", "); Serial.print(data.magY); Serial.print(", "); Serial.println(data.magZ), Serial.print("Heading: "); Serial.println(data.heading);
   Serial.println("--------------------");
-  // delay(50);
+  delay(50);
   // Controller.control(data)
 }

@@ -8,6 +8,12 @@
 #include <SparkFun_MMC5983MA_Arduino_Library.h>
 #include <cstdint>
 
+#define SAMPLE_THRESHOLD 2
+#define SEA_LEVEL_PRESSURE 101300.0 // Standard sea level pressure in Pa
+#define TEMP_LAPSE_RATE 0.0065 // Temperature lapse rate in K/m
+#define GAS_CONSTANT 8.31432 // Universal gas constant in J/mol/K
+#define MOLAR_MASS_AIR 0.0289644 // Molar mass of Earth's air in kg/mol
+
 ISM330DHCXSensor imu(&SPI, constants::kCsPin, 1000000);
 BME280I2C bme;
 BME280::TempUnit tempUnit = BME280::TempUnit_Celsius;
@@ -36,7 +42,7 @@ float heading = 0;
  * @param data_logger Reference to the DataLogger for event logging.
  */
 Sensors::Sensors(DataLogger& data_logger)
-    : imu(&SPI, constants::kCsPin, 1000), data_logger_(data_logger) {
+    : imu (&SPI, constants::kCsPin, 1000000), data_logger_(data_logger) {
   flight_data.altitude = 0.0f;
   flight_data.verticalVelocity = 0.0f;
   flight_data.accX = 0.0f;
@@ -60,8 +66,15 @@ Sensors::Sensors(DataLogger& data_logger)
 FlightData Sensors::ReadFlightData() {
   flight_data.timeMs = millis();
 
+  uint16_t samples;
+
+  IMU_Data_ imu_data;
+
   // Read each sensor ONCE
-  IMU_Data_ imu_data = readIMU();
+  imu.FIFO_Get_Num_Samples(&samples);
+  if (samples > SAMPLE_THRESHOLD) {
+    imu_data = readIMU(samples);
+  }
   Mag_Data_ mag_data = readMagnetometer();
 
   flight_data.altitude         = readAltitude();
@@ -115,11 +128,11 @@ void Sensors::initialize_IMU() {
         } 
         imu.ACC_SetFullScale(16);
         imu.GYRO_SetFullScale(2000);
-        imu.FIFO_Set_Mode(ISM330DHCX_STREAM_TO_FIFO_MODE);   // continuous overwrite
-        imu.FIFO_ACC_Set_BDR(1000);
-        imu.FIFO_GYRO_Set_BDR(1000);
-        imu.ACC_SetOutputDataRate(1000);
-        imu.GYRO_SetOutputDataRate(1000);
+        imu.FIFO_Set_Mode(ISM330DHCX_STREAM_MODE);   // continuous overwrite
+        imu.FIFO_ACC_Set_BDR(104);
+        imu.FIFO_GYRO_Set_BDR(104);
+        imu.ACC_SetOutputDataRate(104);
+        imu.GYRO_SetOutputDataRate(104);
         imu.ACC_Enable();
         imu.GYRO_Enable();
 
@@ -180,42 +193,49 @@ float Sensors::readAccelMagnitude(IMU_Data_ imu_data) {
 }
 
 // reads raw sensor data
-Sensors::IMU_Data_ Sensors::readIMU() {
-      if (imu_initialized == true) { // Basic check to ensure IMU is providing data
-        int32_t accelerometer[3];
-        int32_t gyroscope[3];
-        imu.FIFO_ACC_Get_Axes(accelerometer);
+Sensors::IMU_Data_ Sensors::readIMU(uint16_t samples_to_read) {
+  if (!imu_initialized) {
+    return {0, 0, 0, 0, 0, 0};
+  }
+
+  int32_t accelerometer[3] = {0, 0, 0};
+  int32_t gyroscope[3]     = {0, 0, 0};
+  bool acc_available = false;
+  bool gyr_available = false;
+
+  IMU_Data_ imu_data = {0, 0, 0, 0, 0, 0};
+
+  for (uint16_t i = 0; i < samples_to_read; i++) {
+    uint8_t tag;
+    imu.FIFO_Get_Tag(&tag);
+
+    switch (tag) {
+      case ISM330DHCX_GYRO_NC_TAG:
         imu.FIFO_GYRO_Get_Axes(gyroscope);
+        gyr_available = true;
+        break;
+      case ISM330DHCX_XL_NC_TAG:
+        imu.FIFO_ACC_Get_Axes(accelerometer);
+        acc_available = true;
+        break;
+      default:
+        break;
+    }
 
-        Sensors::IMU_Data_ imu_data;
+    // Only update imu_data when we have a fresh pair of readings
+    if (acc_available && gyr_available) {
+      imu_data.ax = accelerometer[0];
+      imu_data.ay = accelerometer[1];
+      imu_data.az = accelerometer[2];
+      imu_data.gx = gyroscope[0];
+      imu_data.gy = gyroscope[1];
+      imu_data.gz = gyroscope[2];
+      acc_available = false;
+      gyr_available = false;
+    }
+  }
 
-        imu_data.ax = accelerometer[0];
-        imu_data.ay = accelerometer[1];
-        imu_data.az = accelerometer[2];
-
-        imu_data.gx = gyroscope[0];
-        imu_data.gy = gyroscope[1];
-        imu_data.gz = gyroscope[2];
-        return imu_data;     
-        uint16_t fifo_samples = 0;
-        ISM330DHCXStatusTypeDef status = imu.FIFO_Get_Num_Samples(&fifo_samples);
-
-        Serial.print("FIFO status: ");  Serial.println(status);   // 0 = OK, 1 = ERROR
-        Serial.print("FIFO samples: "); Serial.println(fifo_samples);
-
-
-      } else {
-        Sensors::IMU_Data_ imu_data;
-        imu_data.ax = NAN;
-        imu_data.ay = NAN;
-        imu_data.az = NAN;
-
-        imu_data.gx = NAN;
-        imu_data.gy = NAN;
-        imu_data.gz = NAN;
-
-        return imu_data;   
-      }  
+  return imu_data;
 }
 
 Sensors::Mag_Data_ Sensors::readMagnetometer(){
@@ -250,10 +270,10 @@ Sensors::Mag_Data_ Sensors::readMagnetometer(){
         } else {
           
             Sensors::Mag_Data_ mag_data;
-            mag_data.mx = NAN;
-            mag_data.my = NAN;
-            mag_data.mz = NAN;
-            mag_data.heading = NAN;
+            mag_data.mx = 0;
+            mag_data.my = 0;
+            mag_data.mz = 0;
+            mag_data.heading = 0;
 
             return mag_data;
         }
@@ -261,13 +281,8 @@ Sensors::Mag_Data_ Sensors::readMagnetometer(){
 };
 
 float Sensors::_getAltitude(float pressure, float temperature) {
-        const float SEA_LEVEL_PRESSURE = 101300.0; // Standard sea level pressure in Pa
-        const float TEMP_LAPSE_RATE = 0.0065; // Temperature lapse rate in K/m
-        const float GAS_CONSTANT = 8.31432; // Universal gas constant in J/mol/K
-        const float MOLAR_MASS_AIR = 0.0289644; // Molar mass of Earth's air in kg/mol
-        const float GRAVITY = 9.80665; // Gravitational acceleration in m/s^2
 
-        const float SIMPLIFIED_CONSTANTS = GAS_CONSTANT / (MOLAR_MASS_AIR * GRAVITY); // Precompute constant part of the formula
+        const float SIMPLIFIED_CONSTANTS = GAS_CONSTANT / (MOLAR_MASS_AIR * constants::kGravity); // Precompute constant part of the formula
         
         return SIMPLIFIED_CONSTANTS * temperature * logf(SEA_LEVEL_PRESSURE / pressure);
 };
