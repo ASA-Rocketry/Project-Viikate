@@ -55,7 +55,7 @@ class Sensors {
 
                 float _getAltitude(float pressure, float temperature);
                 float readBarometer();
-                IMU_Data_ readIMU();
+                IMU_Data_ readIMU(uint16_t num_samples);
                 Mag_Data_ readMagnetometer();
                 void initialize_IMU();
                 void initializeMagnetometer();
