@@ -223,13 +223,15 @@ Sensors::IMU_Data_ Sensors::readIMU(uint16_t samples_to_read) {
     }
 
     // Only update imu_data when we have a fresh pair of readings
+
+    // axis rotation fixed to make accelerometer z-axis point upwards
     if (acc_available && gyr_available) {
-      imu_data.ax = accelerometer[0];
+      imu_data.az = accelerometer[0];
       imu_data.ay = accelerometer[1];
-      imu_data.az = accelerometer[2];
-      imu_data.gx = gyroscope[0];
+      imu_data.ax = -accelerometer[2];
+      imu_data.gz = gyroscope[0];
       imu_data.gy = gyroscope[1];
-      imu_data.gz = gyroscope[2];
+      imu_data.gx = -gyroscope[2];
       acc_available = false;
       gyr_available = false;
     }
@@ -261,9 +263,11 @@ Sensors::Mag_Data_ Sensors::readMagnetometer(){
 
             Sensors::Mag_Data_ mag_data;
 
+            // axis rotation fixed to make magenetometer z-axis point upwards
+
             mag_data.mx = scaledX;
-            mag_data.my = scaledY;
-            mag_data.mz = scaledZ;
+            mag_data.mz = -scaledY;
+            mag_data.my = scaledZ;
             mag_data.heading = heading;
             return mag_data;
             
