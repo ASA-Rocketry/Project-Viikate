@@ -13,6 +13,7 @@
 #define TEMP_LAPSE_RATE 0.0065 // Temperature lapse rate in K/m
 #define GAS_CONSTANT 8.31432 // Universal gas constant in J/mol/K
 #define MOLAR_MASS_AIR 0.0289644 // Molar mass of Earth's air in kg/mol
+#define MG_TO_MPS2 0.00981f // Conversion factor from milli-g to m/s^2
 
 ISM330DHCXSensor imu(&SPI, constants::kCsPin, 1000000);
 BME280I2C bme;
@@ -74,30 +75,29 @@ FlightData Sensors::ReadFlightData() {
   imu.FIFO_Get_Num_Samples(&samples);
   if (samples > SAMPLE_THRESHOLD) {
     imu_data = readIMU(samples);
+    flight_data.altitude         = readAltitude();
+    flight_data.verticalVelocity = computeVerticalVelocity(imu_data.az);
+
+    flight_data.accX = imu_data.ax * MG_TO_MPS2; // Convert from milli-g to m/s^2
+    flight_data.accY = imu_data.ay * MG_TO_MPS2;
+    flight_data.accZ = imu_data.az * MG_TO_MPS2;
+
+    flight_data.rotX = imu_data.gx / 1000.0f; // Convert from mdps to dps
+    flight_data.rotY = imu_data.gy / 1000.0f;
+    flight_data.rotZ = imu_data.gz / 1000.0f;
+
+    flight_data.accelMagnitude = sqrt(
+      pow(imu_data.ax, 2) +
+      pow(imu_data.ay, 2) +
+      pow(imu_data.az, 2)
+    );
   }
   Mag_Data_ mag_data = readMagnetometer();
-
-  flight_data.altitude         = readAltitude();
-  flight_data.verticalVelocity = computeVerticalVelocity(imu_data.az);
-
-  flight_data.accX = imu_data.ax;
-  flight_data.accY = imu_data.ay;
-  flight_data.accZ = imu_data.az;
-
-  flight_data.rotX = imu_data.gx;
-  flight_data.rotY = imu_data.gy;
-  flight_data.rotZ = imu_data.gz;
 
   flight_data.magX    = mag_data.mx;
   flight_data.magY    = mag_data.my;
   flight_data.magZ    = mag_data.mz;
   flight_data.heading = mag_data.heading;
-
-  flight_data.accelMagnitude = sqrt(
-    pow(imu_data.ax, 2) +
-    pow(imu_data.ay, 2) +
-    pow(imu_data.az, 2)
-  );
 
   flight_data.rbfRemoved = digitalRead(constants::kRbfPin);
 
