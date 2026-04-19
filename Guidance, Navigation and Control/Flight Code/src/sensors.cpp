@@ -39,6 +39,10 @@ double scaledY = 0;
 double scaledZ = 0;
 double heading = 0;
 
+double dt = 1/104.000f; // Time step between samples
+
+bool use_filtered_data = true; //whether to log and display filtered data
+
 /**
  * @brief Constructs a Sensors object.
  * @param data_logger Reference to the DataLogger for event logging.
@@ -79,19 +83,35 @@ FlightData Sensors::ReadFlightData() {
     flight_data.altitude         = readAltitude();
     flight_data.verticalVelocity = computeVerticalVelocity(imu_data.az);
 
-    flight_data.accX = imu_data.ax * MG_TO_MPS2; // Convert from milli-g to m/s^2
-    flight_data.accY = imu_data.ay * MG_TO_MPS2;
-    flight_data.accZ = imu_data.az * MG_TO_MPS2;
+    if (use_filtered_data == false) { //if we choose not to use filtered data
+      flight_data.accX = imu_data.ax * MG_TO_MPS2; // Convert from milli-g to m/s^2
+      flight_data.accY = imu_data.ay * MG_TO_MPS2;
+      flight_data.accZ = imu_data.az * MG_TO_MPS2;
 
-    flight_data.rotX = imu_data.gx / 1000.0f; // Convert from mdps to dps
-    flight_data.rotY = imu_data.gy / 1000.0f;
-    flight_data.rotZ = imu_data.gz / 1000.0f;
+      flight_data.rotX = imu_data.gx / 1000.0f; // Convert from mdps to dps
+      flight_data.rotY = imu_data.gy / 1000.0f;
+      flight_data.rotZ = imu_data.gz / 1000.0f;
 
-    flight_data.accelMagnitude = sqrt(
+      flight_data.accelMagnitude = sqrt(
       pow(imu_data.ax, 2) +
       pow(imu_data.ay, 2) +
       pow(imu_data.az, 2)
-    );
+      );
+    } else {//if filtered data is to be used
+      flight_data.accX = imu_data.ax * MG_TO_MPS2; // Convert from milli-g to m/s^2
+      flight_data.accY = imu_data.ay * MG_TO_MPS2;
+      
+
+      flight_data.rotX = imu_data.gx / 1000.0f; // Convert from mdps to dps
+      flight_data.rotY = imu_data.gy / 1000.0f;
+      flight_data.rotZ = imu_data.gz / 1000.0f;
+
+      flight_data.accelMagnitude = sqrt(
+      pow(imu_data.ax, 2) +
+      pow(imu_data.ay, 2) +
+      pow(imu_data.az, 2)
+      );      
+    };
   }
   Mag_Data_ mag_data = readMagnetometer();
 
@@ -114,6 +134,30 @@ void Sensors::Initialize() {
   initialize_IMU();
   initializeMagnetometer();
   initaliseBarometer();
+
+  //creating kalman filter for accelerometer
+  int n = 3; // Number of states
+  int m = 1; // Number of measurements
+
+  Eigen::MatrixXd A(n, n); // System dynamics matrix
+  Eigen::MatrixXd Q(n, n); // Process noise covariance
+  Eigen::MatrixXd R(m, m); // Measurement noise covariance
+  Eigen::MatrixXd P(n, n); // Estimate error covariance
+  Eigen::VectorXd x0(m, n);
+  
+  A << 1, dt, (pow(dt, 2))/2, 0, 1, dt, 0, 0, 1;
+
+  R << 1.444*pow(10, -5), 0, 0, 0, 1.44*pow(10, -5), 0, 0, 0, 1.44*pow(10, -5);
+  //R is based on squared measurement uncertainty using noise
+
+  Q << (pow(dt, 4))/4, (pow(dt, 3))/2, pow(dt, 2)/2, (pow(dt, 3))/2, (pow(dt, 2)), dt, (pow(dt, 2))/2, dt, 1;
+  Q = Q * 1.444*pow(10, -5);
+
+  x0.fill(0);
+
+  KalmanFilter AccKalman(dt, A, Q, R, P);
+  AccKalman.init((double)0, x0);
+
 }
 
 void Sensors::initialize_IMU() {
