@@ -3,6 +3,8 @@
 #include <Arduino.h>
 #include <ArduinoEigen.h>
 
+KalmanFilter() {};
+
 KalmanFilter::KalmanFilter(double dt,
                              const Eigen::MatrixXd& A,
                              const Eigen::MatrixXd& Q,

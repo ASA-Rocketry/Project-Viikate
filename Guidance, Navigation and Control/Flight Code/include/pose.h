@@ -15,6 +15,8 @@ using namespace Eigen;
 class KalmanFilter {
 public:
 
+  KalmanFilter() {};
+
   KalmanFilter(double dt,
                const Eigen::MatrixXd& A, // state transition matrix
                const Eigen::MatrixXd& Q, // process noise matrix
