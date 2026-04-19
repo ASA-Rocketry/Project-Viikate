@@ -13,6 +13,21 @@ KalmanFilter::KalmanFilter(double dt,
         I.setIdentity(m, n);
 
     }
+
+void KalmanFilter::init(const Eigen::MatrixXd& A,
+                             const Eigen::MatrixXd& Q,
+                             const Eigen::MatrixXd& R, 
+                             const Eigen::MatrixXd& P0, double t0, const Eigen::VectorXd& x0) {
+    this->A = A;
+    this->Q = Q;
+    this->R = R;
+    this->P0 = P0;
+    x_hat = x0;
+    P = P0;
+    this->t0 = t0;
+    t = t0;
+    initialised = true;
+}
   
 void KalmanFilter::init(double t0, const Eigen::VectorXd& x0) {
     x_hat = x0;

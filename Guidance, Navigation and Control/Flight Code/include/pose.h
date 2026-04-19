@@ -21,6 +21,11 @@ public:
                const Eigen::MatrixXd& R,
                const Eigen::MatrixXd& P0); // initial state covariance matrix
 
+  void init(const Eigen::MatrixXd& A,
+            const Eigen::MatrixXd& Q,
+            const Eigen::MatrixXd& R,
+            const Eigen::MatrixXd& P0, double t0, const Eigen::VectorXd& x0);
+
   void init(double t0, const Eigen::VectorXd& x0);
 
   void init();
