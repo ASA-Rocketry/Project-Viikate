@@ -2,6 +2,7 @@
 #include "Arduino.h"
 #include "constants.h"
 #include "Wire.h"
+#include "pose.h"
 #include <SPI.h>
 #include "ISM330DHCXSensor.h"
 #include <BME280I2C.h>
@@ -226,6 +227,7 @@ Sensors::IMU_Data_ Sensors::readIMU(uint16_t samples_to_read) {
 
     // axis rotation fixed to make accelerometer z-axis point upwards
     if (acc_available && gyr_available) {
+      
       imu_data.az = accelerometer[0];
       imu_data.ay = accelerometer[1];
       imu_data.ax = -accelerometer[2];
@@ -234,6 +236,7 @@ Sensors::IMU_Data_ Sensors::readIMU(uint16_t samples_to_read) {
       imu_data.gx = -gyroscope[2];
       acc_available = false;
       gyr_available = false;
+      
     }
   }
 
