@@ -19,11 +19,13 @@ public:
                const Eigen::MatrixXd& A, // state transition matrix
                const Eigen::MatrixXd& Q, // process noise matrix
                const Eigen::MatrixXd& R,
+               const Eigen::MatrixXd& H, // observation matrix
                const Eigen::MatrixXd& P0); // initial state covariance matrix
 
   void init(const Eigen::MatrixXd& A,
             const Eigen::MatrixXd& Q,
             const Eigen::MatrixXd& R,
+            const Eigen::MatrixXd& H,
             const Eigen::MatrixXd& P0, double t0, const Eigen::VectorXd& x0);
 
   void init(double t0, const Eigen::VectorXd& x0);
@@ -39,7 +41,7 @@ public:
 
 private:
 
-  Eigen::MatrixXd A, Q, R, P, K, P0;
+  Eigen::MatrixXd A, Q, R, P, K, P0, H;
 
   int m, n;
 
