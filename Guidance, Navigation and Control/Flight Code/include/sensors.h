@@ -2,6 +2,7 @@
 #define FLIGHT_CODE_INCLUDE_SENSORS_H_
 
 #include <Arduino.h>
+#include <ArduinoEigen.h>
 #include "ISM330DHCXSensor.h"
 #include "data_logger.h"
 #include <SPI.h> //spi
@@ -44,8 +45,16 @@ class Sensors {
                         double heading;
                 };
 
+                struct InitialState {
+                        Eigen::Vector3f linear;  
+                        Eigen::Vector2f GX;
+                        Eigen::Vector2f GY;
+                        Eigen::Vector2f GZ; 
+                }; // computed at the start of the flight, used as reference for vertical velocity and rotation rates
+
                 IMU_Data_ imu_data_;
                 Mag_Data_ mag_data_;
+                InitialState initial_state_;
 
                 float readAccelMagnitude(IMU_Data_ imu_data);
                 float readAltitude();
@@ -57,6 +66,7 @@ class Sensors {
                 float readBarometer();
                 IMU_Data_ readIMU(uint16_t num_samples);
                 Mag_Data_ readMagnetometer();
+                InitialState _computeInitialState(const IMU_Data_& data);
                 void initialize_IMU();
                 void initializeMagnetometer();
                 void initaliseBarometer();

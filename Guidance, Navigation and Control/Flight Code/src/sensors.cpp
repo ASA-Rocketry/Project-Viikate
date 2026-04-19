@@ -9,7 +9,7 @@
 #include <SparkFun_MMC5983MA_Arduino_Library.h>
 #include <cstdint>
 
-#define SAMPLE_THRESHOLD 2
+#define SAMPLE_THRESHOLD 5
 #define SEA_LEVEL_PRESSURE 101300.0 // Standard sea level pressure in Pa
 #define TEMP_LAPSE_RATE 0.0065 // Temperature lapse rate in K/m
 #define GAS_CONSTANT 8.31432 // Universal gas constant in J/mol/K
@@ -114,6 +114,20 @@ void Sensors::Initialize() {
   initialize_IMU();
   initializeMagnetometer();
   initaliseBarometer();
+
+  Serial.println("Sensors initialized.");
+  Serial.println("=== Initial State ===");
+  
+  Serial.println("Linear [position, velocity, acceleration]:");
+  Serial.print("  position:     "); Serial.print(initial_state_.linear(0), 4); Serial.println(" m");
+  Serial.print("  velocity:     "); Serial.print(initial_state_.linear(1), 4); Serial.println(" m/s");
+  Serial.print("  acceleration (z): "); Serial.print(initial_state_.linear(2), 4); Serial.println(" m/s^2");
+
+  Serial.println("Angular [orientation, angular_velocity]:");
+  Serial.println("  orientation (X, Y, Z ):      "); Serial.println(initial_state_.GX(0), 4); Serial.println(initial_state_.GY(0), 4); Serial.println(initial_state_.GZ(0), 4); Serial.println(" rad");
+  Serial.println("  angular_velocity: "); Serial.println(initial_state_.GX(1), 4); Serial.println(initial_state_.GY(1), 4); Serial.println(initial_state_.GZ(1), 4); Serial.println(" rad/s");
+
+  Serial.println("====================");
 }
 
 void Sensors::initialize_IMU() {
@@ -138,6 +152,45 @@ void Sensors::initialize_IMU() {
         imu.GYRO_Enable();
 
         delay(100);
+
+        // add clearance delay here to reduce IMU vibration
+
+        IMU_Data_ imu_data_initial;
+
+        uint16_t init_samples;
+
+        imu.FIFO_Get_Num_Samples(&init_samples);
+        if (init_samples > SAMPLE_THRESHOLD) {
+          imu_data_initial = readIMU(init_samples);
+          // Use initial accelerometer z-axis reading as reference for vertical velocity
+          Sensors::initial_state_ = _computeInitialState(imu_data_initial);
+        }
+}
+
+Sensors::InitialState Sensors::_computeInitialState(const Sensors::IMU_Data_& data) {
+  InitialState state;
+
+  // ── linear  ────────────────────────────────────────────────
+  float acc_ms2 = data.az * MG_TO_MPS2;
+
+  state.linear << 0.0f,     // position 
+                  0.0f,     // velocity 
+                  acc_ms2;  // acceleration — from FIFO reading
+
+  // ── angular ────────────────────────────────────────────────
+
+  float ori_z = data.gz / 1000.0f;
+  float ori_y = data.gy / 1000.0f;
+  float ori_x = data.gx / 1000.0f;
+
+  state.GZ << 0.0f,         // orientation 
+                   ori_z; 
+  state.GY << 0.0f,         // orientation
+                   ori_y;
+  state.GX << 0.0f,         // orientation
+                   ori_x;
+
+  return state;
 }
 
 void Sensors::initializeMagnetometer() {
