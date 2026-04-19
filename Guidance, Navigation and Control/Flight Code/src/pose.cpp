@@ -6,8 +6,9 @@
 KalmanFilter::KalmanFilter(double dt,
                              const Eigen::MatrixXd& A,
                              const Eigen::MatrixXd& Q,
-                             const Eigen::MatrixXd& R)
-    : A(A), Q(Q), R(R), m(R.rows()), n(A.rows()), dt(dt), initialised(false) {
+                             const Eigen::MatrixXd& R, 
+                             const Eigen::MatrixXd& P0)
+    : A(A), Q(Q), R(R), P0(P0), m(R.rows()), n(A.rows()), dt(dt), initialised(false) {
         
         I.setIdentity(m, n);
 
