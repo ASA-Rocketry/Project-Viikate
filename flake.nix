@@ -28,6 +28,12 @@
 
             pkgs.just
             pkgs.clang-tools
+            pkgs.sphinx
+
+            pkgs.python3
+            pkgs.python3Packages.pyserial
+            pkgs.python3Packages.matplotlib
+            pkgs.python3Packages.numpy
           ];
         };
       }
