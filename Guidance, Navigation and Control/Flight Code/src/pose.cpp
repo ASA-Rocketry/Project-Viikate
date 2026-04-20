@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <ArduinoEigen.h>
 
-KalmanFilter() {};
+
 
 KalmanFilter::KalmanFilter(double dt,
                              const Eigen::MatrixXd& A,
@@ -16,6 +16,8 @@ KalmanFilter::KalmanFilter(double dt,
         I.setIdentity(m, n);
 
     }
+
+KalmanFilter::KalmanFilter() {};
 
 void KalmanFilter::init(const Eigen::MatrixXd& A,
                              const Eigen::MatrixXd& Q,
@@ -31,6 +33,8 @@ void KalmanFilter::init(const Eigen::MatrixXd& A,
     P = P0;
     this->t0 = t0;
     t = t0;
+    int n = A.rows();
+    I.setIdentity(n, n);
     initialised = true;
 }
   

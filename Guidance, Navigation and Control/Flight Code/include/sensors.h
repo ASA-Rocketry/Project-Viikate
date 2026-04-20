@@ -75,6 +75,7 @@ class Sensors {
                 SFE_MMC5983MA mag;
 
                 DataLogger& data_logger_;
+                Eigen::VectorXd AccKalmanUpdate(int32_t z);
 };
 
 #endif  // FLIGHT_CODE_INCLUDE_SENSORS_H_

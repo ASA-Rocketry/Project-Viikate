@@ -21,6 +21,7 @@ BME280I2C bme;
 BME280::TempUnit tempUnit = BME280::TempUnit_Celsius;
 BME280::PresUnit presUnit = BME280::PresUnit_Pa;
 SFE_MMC5983MA mag;
+KalmanFilter AccKalman;
 
 bool imu_initialized = false;
 bool mag_initialized = false;
@@ -39,7 +40,7 @@ double scaledY = 0;
 double scaledZ = 0;
 double heading = 0;
 
-double dt = 1/104.000f; // Time step between samples
+double dt = 1/1000.000f; // Time step between samples
 
 bool use_filtered_data = true; //whether to log and display filtered data
 
@@ -101,6 +102,12 @@ FlightData Sensors::ReadFlightData() {
       flight_data.accX = imu_data.ax * MG_TO_MPS2; // Convert from milli-g to m/s^2
       flight_data.accY = imu_data.ay * MG_TO_MPS2;
       
+      //get z axis pos/vel/acc estimate from kalman filter
+      Eigen::VectorXd acc_estimate = AccKalmanUpdate(imu_data.az*MG_TO_MPS2);
+      //update accZ, altitude and velocity based on acc_estimates
+      flight_data.accZ = acc_estimate(2);
+      flight_data.altitude         = acc_estimate(0);
+      flight_data.verticalVelocity = acc_estimate(1);
 
       flight_data.rotX = imu_data.gx / 1000.0f; // Convert from mdps to dps
       flight_data.rotY = imu_data.gy / 1000.0f;
@@ -155,21 +162,23 @@ void Sensors::Initialize() {
   Eigen::MatrixXd A(n, n); // System dynamics matrix
   Eigen::MatrixXd Q(n, n); // Process noise covariance
   Eigen::MatrixXd R(m, m); // Measurement noise covariance
+  Eigen::MatrixXd H(m, n); // Output matrix
   Eigen::MatrixXd P(n, n); // Estimate error covariance
-  Eigen::VectorXd x0(m, n);
   
   A << 1, dt, (pow(dt, 2))/2, 0, 1, dt, 0, 0, 1;
+  H << 0, 0, 1;
 
-  R << 1.444*pow(10, -5), 0, 0, 0, 1.44*pow(10, -5), 0, 0, 0, 1.44*pow(10, -5);
+  R << 1.444*pow(10, -5);
   //R is based on squared measurement uncertainty using noise
 
   Q << (pow(dt, 4))/4, (pow(dt, 3))/2, pow(dt, 2)/2, (pow(dt, 3))/2, (pow(dt, 2)), dt, (pow(dt, 2))/2, dt, 1;
   Q = Q * 1.444*pow(10, -5);
 
-  x0.fill(0);
-
-  KalmanFilter AccKalman(dt, A, Q, R, P);
-  AccKalman.init((double)0, x0);
+  P << 500, 0, 0, 
+      0, 10, 0, 
+      0, 0, 1.444*pow(10, -5);
+  Eigen::VectorXd x0 = initial_state_.linear.cast<double>();
+  AccKalman.init(A, Q, R, H, P, 0.0, x0);
 
 }
 
@@ -215,23 +224,16 @@ Sensors::InitialState Sensors::_computeInitialState(const Sensors::IMU_Data_& da
 
   // ── linear  ────────────────────────────────────────────────
   float acc_ms2 = data.az * MG_TO_MPS2;
-
-  state.linear << 0.0f,     // position 
-                  0.0f,     // velocity 
-                  acc_ms2;  // acceleration — from FIFO reading
-
+  state.linear = Eigen::Vector3f(0.0f, 0.0f, acc_ms2);
   // ── angular ────────────────────────────────────────────────
 
-  float ori_z = data.gz / 1000.0f;
-  float ori_y = data.gy / 1000.0f;
-  float ori_x = data.gx / 1000.0f;
+  float ori_z = (float)data.gz / 1000.0f;
+  float ori_y = (float)data.gy / 1000.0f;
+  float ori_x = (float)data.gx / 1000.0f;
 
-  state.GZ << 0.0f,         // orientation 
-                   ori_z; 
-  state.GY << 0.0f,         // orientation
-                   ori_y;
-  state.GX << 0.0f,         // orientation
-                   ori_x;
+  state.GX = Eigen::Vector2f(0.0f, ori_x);
+  state.GY = Eigen::Vector2f(0.0f, ori_y);
+  state.GZ = Eigen::Vector2f(0.0f, ori_z);
 
   return state;
 }
@@ -402,4 +404,13 @@ float Sensors::readBarometer() {
         return NAN;
       }
 
+}
+
+VectorXd Sensors::AccKalmanUpdate(int32_t z) {
+
+  Eigen::VectorXd z_vector(1);
+  z_vector << (float)z;
+  AccKalman.update(z_vector);
+  VectorXd x_hat = AccKalman.state();
+  return x_hat;
 }
