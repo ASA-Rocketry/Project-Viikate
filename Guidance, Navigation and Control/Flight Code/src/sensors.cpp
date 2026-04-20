@@ -499,12 +499,12 @@ Sensors::IMU_Data_ Sensors::readIMU(uint16_t samples_to_read) {
     // axis rotation fixed to make accelerometer z-axis point upwards
     if (acc_available && gyr_available) {
       
-      imu_data.az = accelerometer[0] * MG_TO_MPS2;
+      imu_data.az = -accelerometer[0] * MG_TO_MPS2;
       imu_data.ay = accelerometer[1] * MG_TO_MPS2;
-      imu_data.ax = -accelerometer[2] * MG_TO_MPS2;
+      imu_data.ax = accelerometer[2] * MG_TO_MPS2;
       imu_data.gz = gyroscope[0] / 1000.0f; // Convert from mdps to dps
       imu_data.gy = gyroscope[1] / 1000.0f; // Convert from mdps to dps
-      imu_data.gx = -gyroscope[2] / 1000.0f; // Convert from mdps to dps
+      imu_data.gx = gyroscope[2] / 1000.0f; // Convert from mdps to dps
       acc_available = false;
       gyr_available = false;
       
@@ -521,10 +521,10 @@ Sensors::Mag_Data_ Sensors::readMagnetometer(){
             scaledX = (double)rawValueX_ - 131072.0;
             scaledX /= 131072.0;
 
-            scaledZ = (double)-rawValueY_ - 131072.0;
+            scaledZ = (double)+rawValueY_ - 131072.0;
             scaledZ /= 131072.0;
 
-            scaledY = (double)rawValueZ_ - 131072.0;
+            scaledY = (double)-rawValueZ_ - 131072.0;
             scaledY /= 131072.0;
 
             heading = atan2(scaledX, 0 - scaledY);

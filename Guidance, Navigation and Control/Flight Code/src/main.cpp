@@ -46,7 +46,7 @@ void loop() {
   Serial.print("Mag: "); Serial.print(data.magX); Serial.print(", "); Serial.print(data.magY); Serial.print(", "); Serial.println(data.magZ), Serial.print("Heading: "); Serial.println(data.heading);
   Serial.println("--------------------");
 
-  control.PID(90.0f, data.oriZ); // Example: control to maintain 90 degrees orientation around Z-axis
+  control.PID(0.0f, -data.oriZ); // Example: control to maintain 90 degrees orientation around Z-axis
 
   Serial.println("Control error:");
   error = control.get_error();
@@ -55,7 +55,7 @@ void loop() {
     digitalWrite(constants::kLEDPin, HIGH); // Turn on LED if error is small (indicating good control)
   } else {
     digitalWrite(constants::kLEDPin, LOW); // Turn off LED if error is
-  delay(50);
+  // delay(50);
   }
   // Controller.control(data)
 }

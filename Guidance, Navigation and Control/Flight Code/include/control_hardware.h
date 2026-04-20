@@ -25,6 +25,8 @@ class ControlHardware {
    */
   void SetCanardAngle(float angle_degrees);
 
+  void initialisationAnimation(); // Optional: Visual servo test pattern for pre-flight checks
+
  private:
   Servo canard_servo1_;  /**< Servo for canard 1 */
   Servo canard_servo2_;  /**< Servo for canard 2 */

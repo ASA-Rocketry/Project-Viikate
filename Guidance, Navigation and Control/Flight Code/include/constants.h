@@ -22,9 +22,9 @@ namespace constants {
     static constexpr int kSCKPin  = 13;  
 
     // PID parameters
-    static constexpr float kProportional = 10.0f;
-    static constexpr float kIntegrator = 1.0f;
-    static constexpr float kDerivative = 0.1f;
+    static constexpr float kProportional = 1.0f;
+    static constexpr float kIntegrator = 0.5f;
+    static constexpr float kDerivative = 0.01f;
 
     // PID output limits
     static constexpr float kMaxControlAngle = 30.0f;  // Max canard deflection in degrees
@@ -40,10 +40,10 @@ namespace constants {
     static constexpr float kServoNeutralAngle = 90.0f;  // Servo neutral command angle
 
     // servo trimming parameters
-    static constexpr float kServoTrim1 = 0.0f;
-    static constexpr float kServoTrim2 = 0.0f;
-    static constexpr float kServoTrim3 = 0.0f;
-    static constexpr float kServoTrim4 = 0.0f;
+    static constexpr float kServoTrim1 = -10.0f;
+    static constexpr float kServoTrim2 = -10.0f;
+    static constexpr float kServoTrim3 = -10.0f;
+    static constexpr float kServoTrim4 = -10.0f;
 
     static const unsigned long CALIBRATION_DURATION_MS = 5000;
 }
