@@ -22,6 +22,7 @@ BME280::TempUnit tempUnit = BME280::TempUnit_Celsius;
 BME280::PresUnit presUnit = BME280::PresUnit_Pa;
 SFE_MMC5983MA mag;
 KalmanFilter AccKalman;
+KalmanFilter GyroKalman;
 
 bool imu_initialized = false;
 bool mag_initialized = false;
@@ -104,14 +105,21 @@ FlightData Sensors::ReadFlightData() {
       
       //get z axis pos/vel/acc estimate from kalman filter
       Eigen::VectorXd acc_estimate = AccKalmanUpdate(imu_data.az*MG_TO_MPS2);
+
       //update accZ, altitude and velocity based on acc_estimates
       flight_data.accZ = acc_estimate(2);
       flight_data.altitude         = acc_estimate(0);
       flight_data.verticalVelocity = acc_estimate(1);
 
-      flight_data.rotX = imu_data.gx / 1000.0f; // Convert from mdps to dps
-      flight_data.rotY = imu_data.gy / 1000.0f;
-      flight_data.rotZ = imu_data.gz / 1000.0f;
+      Eigen::VectorXd gyr_estimate = GyroKalmanUpdate(imu_data.gx, imu_data.gy, imu_data.gz);
+
+      flight_data.oriX = gyr_estimate(0);
+      flight_data.oriY = gyr_estimate(2);
+      flight_data.oriZ = gyr_estimate(4);
+
+      flight_data.rotX = gyr_estimate(1); // Convert from mdps to dps
+      flight_data.rotY = gyr_estimate(3);
+      flight_data.rotZ = gyr_estimate(5);
 
       flight_data.accelMagnitude = sqrt(
       pow(imu_data.ax, 2) +
@@ -151,34 +159,101 @@ void Sensors::Initialize() {
   Serial.print("  acceleration (z): "); Serial.print(initial_state_.linear(2), 4); Serial.println(" m/s^2");
 
   Serial.println("Angular [orientation, angular_velocity]:");
-  Serial.println("  orientation (X, Y, Z ):      "); Serial.println(initial_state_.GX(0), 4); Serial.println(initial_state_.GY(0), 4); Serial.println(initial_state_.GZ(0), 4); Serial.println(" rad");
-  Serial.println("  angular_velocity: "); Serial.println(initial_state_.GX(1), 4); Serial.println(initial_state_.GY(1), 4); Serial.println(initial_state_.GZ(1), 4); Serial.println(" rad/s");
+  Serial.println("  orientation (X, Y, Z ):      "); Serial.println(initial_state_.angular(0), 4); Serial.println(initial_state_.angular(1), 4); Serial.println(initial_state_.angular(2), 4); Serial.println(" rad");
+  Serial.println("  angular_velocity: "); Serial.println(initial_state_.angular(3), 4); Serial.println(initial_state_.angular(4), 4); Serial.println(initial_state_.angular(5), 4); Serial.println(" rad/s");
 
   Serial.println("====================");
   //creating kalman filter for accelerometer
-  int n = 3; // Number of states
-  int m = 1; // Number of measurements
 
-  Eigen::MatrixXd A(n, n); // System dynamics matrix
-  Eigen::MatrixXd Q(n, n); // Process noise covariance
-  Eigen::MatrixXd R(m, m); // Measurement noise covariance
-  Eigen::MatrixXd H(m, n); // Output matrix
-  Eigen::MatrixXd P(n, n); // Estimate error covariance
-  
-  A << 1, dt, (pow(dt, 2))/2, 0, 1, dt, 0, 0, 1;
-  H << 0, 0, 1;
+  const int acc_n = 3; // states:       [position, velocity, acceleration]
+  const int acc_m = 1; // measurements: [acceleration]
 
-  R << 1.444*pow(10, -5);
-  //R is based on squared measurement uncertainty using noise
+  Eigen::MatrixXd acc_A(acc_n, acc_n); // state transition
+  Eigen::MatrixXd acc_Q(acc_n, acc_n); // process noise
+  Eigen::MatrixXd acc_R(acc_m, acc_m); // measurement noise
+  Eigen::MatrixXd acc_H(acc_m, acc_n); // observation matrix
+  Eigen::MatrixXd acc_P(acc_n, acc_n); // initial covariance
 
-  Q << (pow(dt, 4))/4, (pow(dt, 3))/2, pow(dt, 2)/2, (pow(dt, 3))/2, (pow(dt, 2)), dt, (pow(dt, 2))/2, dt, 1;
-  Q = Q * 1.444*pow(10, -5);
+  // Noise variance from accelerometer noise density (60 ug/sqrt(Hz) at 104Hz)
+  const double acc_var = 1.444e-5;
 
-  P << 500, 0, 0, 
-      0, 10, 0, 
-      0, 0, 1.444*pow(10, -5);
-  Eigen::VectorXd x0 = initial_state_.linear.cast<double>();
-  AccKalman.init(A, Q, R, H, P, 0.0, x0);
+  acc_A << 1, dt, pow(dt,2)/2,
+           0,  1,          dt,
+           0,  0,           1;
+
+  acc_H << 0, 0, 1;
+
+  acc_R << acc_var;
+
+  acc_Q << pow(dt,4)/4, pow(dt,3)/2, pow(dt,2)/2,
+           pow(dt,3)/2,   pow(dt,2),          dt,
+           pow(dt,2)/2,          dt,            1;
+  acc_Q *= acc_var;
+
+  acc_P << 500,       0,       0,
+             0,      10,       0,
+             0,       0, acc_var;
+
+  Eigen::VectorXd acc_x0 = initial_state_.linear.cast<double>();
+  AccKalman.init(acc_A, acc_Q, acc_R, acc_H, acc_P, 0.0, acc_x0);
+
+  const int gyr_n = 6; // states:       [roll(°), roll_rate(°/s), pitch(°), pitch_rate(°/s), yaw(°), yaw_rate(°/s)]
+  const int gyr_m = 3; // measurements: [roll_rate(°/s), pitch_rate(°/s), yaw_rate(°/s)]
+
+  Eigen::MatrixXd gyr_A(gyr_n, gyr_n);
+  Eigen::MatrixXd gyr_Q(gyr_n, gyr_n);
+  Eigen::MatrixXd gyr_R(gyr_m, gyr_m);
+  Eigen::MatrixXd gyr_H(gyr_m, gyr_n);
+  Eigen::MatrixXd gyr_P(gyr_n, gyr_n);
+
+  // sigma in degrees/s,  var in (degrees/s)²
+  const double gyr_noise_density_mdps = 4.0;
+  const double gyr_noise_density_dps  = gyr_noise_density_mdps * 1e-3;   // mdps -> dps
+  const double gyr_sigma_dps          = gyr_noise_density_dps * sqrt(104.0);
+  const double gyr_var_dps2           = gyr_sigma_dps * gyr_sigma_dps;   // (°/s)²
+
+  // Block diagonal state transition
+  gyr_A.setZero();
+  gyr_A(0,0) = 1;  gyr_A(0,1) = dt;   // roll    (°)  += roll_rate  (°/s) * dt
+  gyr_A(1,1) = 1;
+  gyr_A(2,2) = 1;  gyr_A(2,3) = dt;   // pitch   (°)  += pitch_rate (°/s) * dt
+  gyr_A(3,3) = 1;
+  gyr_A(4,4) = 1;  gyr_A(4,5) = dt;   // yaw     (°)  += yaw_rate   (°/s) * dt
+  gyr_A(5,5) = 1;
+
+  // Observe angular rate directly on each axis
+  gyr_H.setZero();
+  gyr_H(0,1) = 1;   // roll_rate  (°/s)
+  gyr_H(1,3) = 1;   // pitch_rate (°/s)
+  gyr_H(2,5) = 1;   // yaw_rate   (°/s)
+
+  // R — gyro measurement noise in (°/s)²
+  gyr_R.setZero();
+  gyr_R(0,0) = gyr_var_dps2;
+  gyr_R(1,1) = gyr_var_dps2;
+  gyr_R(2,2) = gyr_var_dps2;
+
+  // Q — process noise in (°)² and (°/s)², block diagonal
+  gyr_Q.setZero();
+  for (int axis = 0; axis < 3; axis++) {
+    int i = axis * 2;
+    gyr_Q(i,   i  ) = pow(dt,2);   // angle    (°)²
+    gyr_Q(i,   i+1) = dt;          // cross    (°)(°/s)
+    gyr_Q(i+1, i  ) = dt;          // cross    (°/s)(°)
+    gyr_Q(i+1, i+1) = 1.0;         // rate     (°/s)²
+  }
+  gyr_Q *= gyr_var_dps2;
+
+  // P — initial covariance in (°)² and (°/s)²
+  gyr_P.setZero();
+  for (int axis = 0; axis < 3; axis++) {
+    int i = axis * 2;
+    gyr_P(i,   i  ) = 180.0 * 180.0;   // angle — full 180° uncertainty at startup
+    gyr_P(i+1, i+1) = gyr_var_dps2;    // rate  — matches sensor noise
+  }
+
+  Eigen::VectorXd gyr_x0 = initial_state_.angular.cast<double>();
+  GyroKalman.init(gyr_A, gyr_Q, gyr_R, gyr_H, gyr_P, 0.0, gyr_x0);
 
 }
 
@@ -231,9 +306,9 @@ Sensors::InitialState Sensors::_computeInitialState(const Sensors::IMU_Data_& da
   float ori_y = (float)data.gy / 1000.0f;
   float ori_x = (float)data.gx / 1000.0f;
 
-  state.GX = Eigen::Vector2f(0.0f, ori_x);
-  state.GY = Eigen::Vector2f(0.0f, ori_y);
-  state.GZ = Eigen::Vector2f(0.0f, ori_z);
+  state.angular = Eigen::Matrix<float, 6, 1>();
+
+  state.angular << 0.0f, 0.0f, 0.0f, ori_x, ori_y, ori_z;
 
   return state;
 }
@@ -348,11 +423,11 @@ Sensors::Mag_Data_ Sensors::readMagnetometer(){
             scaledX = (double)rawValueX_ - 131072.0;
             scaledX /= 131072.0;
 
-            scaledY = (double)rawValueY_ - 131072.0;
-            scaledY /= 131072.0;
-
-            scaledZ = (double)rawValueZ_ - 131072.0;
+            scaledZ = (double)-rawValueY_ - 131072.0;
             scaledZ /= 131072.0;
+
+            scaledY = (double)rawValueZ_ - 131072.0;
+            scaledY /= 131072.0;
 
             heading = atan2(scaledX, 0 - scaledY);
 
@@ -365,10 +440,10 @@ Sensors::Mag_Data_ Sensors::readMagnetometer(){
             Sensors::Mag_Data_ mag_data;
 
             // axis rotation fixed to make magenetometer z-axis point upwards
-
+            // TODO: fix magnetometer axis rotation
             mag_data.mx = scaledX;
-            mag_data.mz = -scaledY;
-            mag_data.my = scaledZ;
+            mag_data.mz = scaledZ;
+            mag_data.my = scaledY;
             mag_data.heading = heading;
             return mag_data;
             
@@ -411,6 +486,15 @@ VectorXd Sensors::AccKalmanUpdate(int32_t z) {
   Eigen::VectorXd z_vector(1);
   z_vector << (float)z;
   AccKalman.update(z_vector);
-  VectorXd x_hat = AccKalman.state();
-  return x_hat;
+  return AccKalman.state();
+}
+
+VectorXd Sensors::GyroKalmanUpdate(int32_t gx, int32_t gy, int32_t gz) {
+
+  Eigen::VectorXd z_vector(3);
+  z_vector << static_cast<double>(gx) / 1000.0,
+            static_cast<double>(gy) / 1000.0,
+            static_cast<double>(gz) / 1000.0;
+  GyroKalman.update(z_vector);
+  return GyroKalman.state();
 }

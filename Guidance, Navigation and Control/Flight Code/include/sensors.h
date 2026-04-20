@@ -47,9 +47,7 @@ class Sensors {
 
                 struct InitialState {
                         Eigen::Vector3f linear;  
-                        Eigen::Vector2f GX;
-                        Eigen::Vector2f GY;
-                        Eigen::Vector2f GZ; 
+                        Eigen::Matrix<float, 6, 1> angular;
                 }; // computed at the start of the flight, used as reference for vertical velocity and rotation rates
 
                 IMU_Data_ imu_data_;
@@ -76,6 +74,7 @@ class Sensors {
 
                 DataLogger& data_logger_;
                 Eigen::VectorXd AccKalmanUpdate(int32_t z);
+                Eigen::VectorXd GyroKalmanUpdate(int32_t gx, int32_t gy, int32_t gz);
 };
 
 #endif  // FLIGHT_CODE_INCLUDE_SENSORS_H_

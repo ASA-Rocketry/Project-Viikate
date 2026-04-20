@@ -58,7 +58,16 @@ struct FlightData {
     float rotY;
 
     /** @brief [rad/s] Angular velocity around the rocket's longitudinal (Z) axis. */
-    float rotZ;            
+    float rotZ;
+
+    /** @brief [rad] Orientation around the rocket's X-axis. */
+    float oriX;
+
+    /** @brief [rad] Orientation around the rocket's Y-axis. */
+    float oriY;
+
+    /** @brief [rad] Orientation around the rocket's longitudinal (Z) axis. */
+    float oriZ;
 
     /** @brief [\muT] Strength of magnetic field on the rocket's X-Axis */
     double magX;
