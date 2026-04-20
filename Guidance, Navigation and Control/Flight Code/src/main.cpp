@@ -3,6 +3,7 @@
 #include "state_machine.h"
 #include "sensors.h"
 #include "control.h"
+#include "constants.h"
 #include "control_hardware.h"
 
 DataLogger data_logger;
@@ -11,6 +12,8 @@ Sensors sensors(data_logger);
 ControlHardware control_hardware;
 Control control;
 
+float error;
+
 void setup() {
   Serial.begin(115200); 
   data_logger.Initialize(); // Initialize this before anything else to log failures
@@ -18,6 +21,8 @@ void setup() {
   control_hardware.Initialize();
   control.Initialize(); 
   data_logger.LogEvent(LogType::kInfo, "SETUP COMPLETE");
+
+  pinMode(constants::kLEDPin, OUTPUT); // Set LED pin as output
 }
 
 /**
@@ -41,7 +46,16 @@ void loop() {
   Serial.print("Mag: "); Serial.print(data.magX); Serial.print(", "); Serial.print(data.magY); Serial.print(", "); Serial.println(data.magZ), Serial.print("Heading: "); Serial.println(data.heading);
   Serial.println("--------------------");
 
-  control.PID(0.0f, data.oriZ); // Example: control to maintain 0 degrees orientation around X-axis
+  control.PID(90.0f, data.oriZ); // Example: control to maintain 90 degrees orientation around Z-axis
+
+  Serial.println("Control error:");
+  error = control.get_error();
+  Serial.println(error);
+  if (abs(error) < 5.0f) { // Example threshold for critical error
+    digitalWrite(constants::kLEDPin, HIGH); // Turn on LED if error is small (indicating good control)
+  } else {
+    digitalWrite(constants::kLEDPin, LOW); // Turn off LED if error is
   delay(50);
+  }
   // Controller.control(data)
 }

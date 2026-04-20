@@ -15,6 +15,8 @@ class Control {
    */
   void PID(float set_angle, float current_angle);
 
+  float get_error() const { return previous_error_; } // Accessor for testing and debugging
+
  private:
   // PID state variables
   float previous_error_;      // Previous angular error for derivative calculation
