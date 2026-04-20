@@ -48,6 +48,9 @@ class Sensors {
                 struct InitialState {
                         Eigen::Vector3f linear;  
                         Eigen::Matrix<float, 6, 1> angular;
+                        double linear_offsets[3];
+                        double angular_offsets[3];
+                        double angular_rate_offsets[3];
                 }; // computed at the start of the flight, used as reference for vertical velocity and rotation rates
 
                 IMU_Data_ imu_data_;
@@ -65,9 +68,11 @@ class Sensors {
                 IMU_Data_ readIMU(uint16_t num_samples);
                 Mag_Data_ readMagnetometer();
                 InitialState _computeInitialState(const IMU_Data_& data);
+                void calibrateIMU();
                 void initialize_IMU();
                 void initializeMagnetometer();
                 void initaliseBarometer();
+                void initialiseFilters();
 
                 ISM330DHCXSensor imu;  // class member
                 SFE_MMC5983MA mag;

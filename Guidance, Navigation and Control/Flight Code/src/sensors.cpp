@@ -14,6 +14,7 @@
 #define TEMP_LAPSE_RATE 0.0065 // Temperature lapse rate in K/m
 #define GAS_CONSTANT 8.31432 // Universal gas constant in J/mol/K
 #define MOLAR_MASS_AIR 0.0289644 // Molar mass of Earth's air in kg/mol
+#define RAD_TO_DEG 57.2957795131 // Conversion factor from radians to degrees
 #define MG_TO_MPS2 0.00981f // Conversion factor from milli-g to m/s^2
 
 ISM330DHCXSensor imu(&SPI, constants::kCsPin, 1000000);
@@ -78,21 +79,22 @@ FlightData Sensors::ReadFlightData() {
 
   IMU_Data_ imu_data;
 
+  double correctedAX, correctedAY, correctedAZ, correctedGX, correctedGY, correctedGZ;
+
   // Read each sensor ONCE
   imu.FIFO_Get_Num_Samples(&samples);
   if (samples > SAMPLE_THRESHOLD) {
     imu_data = readIMU(samples);
-    flight_data.altitude         = readAltitude();
-    flight_data.verticalVelocity = computeVerticalVelocity(imu_data.az);
+    flight_data.altitude         = readAltitude(); // from barometer
 
     if (use_filtered_data == false) { //if we choose not to use filtered data
-      flight_data.accX = imu_data.ax * MG_TO_MPS2; // Convert from milli-g to m/s^2
-      flight_data.accY = imu_data.ay * MG_TO_MPS2;
-      flight_data.accZ = imu_data.az * MG_TO_MPS2;
+      flight_data.accX = imu_data.ax; // Convert from milli-g to m/s^2
+      flight_data.accY = imu_data.ay;
+      flight_data.accZ = imu_data.az;
 
-      flight_data.rotX = imu_data.gx / 1000.0f; // Convert from mdps to dps
-      flight_data.rotY = imu_data.gy / 1000.0f;
-      flight_data.rotZ = imu_data.gz / 1000.0f;
+      flight_data.rotX = imu_data.gx;
+      flight_data.rotY = imu_data.gy;
+      flight_data.rotZ = imu_data.gz;
 
       flight_data.accelMagnitude = sqrt(
       pow(imu_data.ax, 2) +
@@ -100,31 +102,38 @@ FlightData Sensors::ReadFlightData() {
       pow(imu_data.az, 2)
       );
     } else { //if filtered data is to be used
-      flight_data.accX = imu_data.ax * MG_TO_MPS2; // Convert from milli-g to m/s^2
-      flight_data.accY = imu_data.ay * MG_TO_MPS2;
-      
+
+      correctedAX = (imu_data.ax) + initial_state_.linear_offsets[0];
+      correctedAY = (imu_data.ay) + initial_state_.linear_offsets[1];
+      correctedAZ = (imu_data.az) + initial_state_.linear_offsets[2];
+      correctedGX = imu_data.gx + initial_state_.angular_rate_offsets[0];
+      correctedGY = imu_data.gy + initial_state_.angular_rate_offsets[1];
+      correctedGZ = imu_data.gz + initial_state_.angular_rate_offsets[2];
+
+      flight_data.accX = correctedAX; // Convert from milli-g to m/s^2
+      flight_data.accY = correctedAY;
       //get z axis pos/vel/acc estimate from kalman filter
-      Eigen::VectorXd acc_estimate = AccKalmanUpdate(imu_data.az*MG_TO_MPS2);
+      Eigen::VectorXd acc_estimate = AccKalmanUpdate(correctedAZ);
 
       //update accZ, altitude and velocity based on acc_estimates
       flight_data.accZ = acc_estimate(2);
       flight_data.altitude         = acc_estimate(0);
       flight_data.verticalVelocity = acc_estimate(1);
 
-      Eigen::VectorXd gyr_estimate = GyroKalmanUpdate(imu_data.gx, imu_data.gy, imu_data.gz);
+      Eigen::VectorXd gyr_estimate = GyroKalmanUpdate(correctedGX, correctedGY, correctedGZ);
 
-      flight_data.oriX = gyr_estimate(0);
-      flight_data.oriY = gyr_estimate(2);
-      flight_data.oriZ = gyr_estimate(4);
+      flight_data.oriX = gyr_estimate(0) * RAD_TO_DEG;
+      flight_data.oriY = gyr_estimate(2) * RAD_TO_DEG;
+      flight_data.oriZ = gyr_estimate(4) * RAD_TO_DEG;
 
-      flight_data.rotX = gyr_estimate(1); 
+      flight_data.rotX = gyr_estimate(1);
       flight_data.rotY = gyr_estimate(3);
       flight_data.rotZ = gyr_estimate(5);
 
       flight_data.accelMagnitude = sqrt(
-      pow(imu_data.ax, 2) +
-      pow(imu_data.ay, 2) +
-      pow(imu_data.az, 2)
+      pow(acc_estimate(0), 2) +
+      pow(acc_estimate(1), 2) +
+      pow(acc_estimate(2), 2)
       );      
     };
   }
@@ -162,7 +171,81 @@ void Sensors::Initialize() {
   Serial.println("  orientation (X, Y, Z ):      "); Serial.println(initial_state_.angular(0), 4); Serial.println(initial_state_.angular(1), 4); Serial.println(initial_state_.angular(2), 4); Serial.println(" degree");
   Serial.println("  angular_velocity: "); Serial.println(initial_state_.angular(3), 4); Serial.println(initial_state_.angular(4), 4); Serial.println(initial_state_.angular(5), 4); Serial.println(" degree/s");
 
+  calibrateIMU();
+
   Serial.println("====================");
+
+  initialiseFilters();
+
+  delay(5000);
+
+}
+
+void Sensors::initialize_IMU() {
+
+        if (!imu.begin()) {
+          data_logger_.LogEvent(LogType::kCritical, "IMU INIT FAILURE");
+          imu_initialized = false;
+          Serial.println("ISM330DHCX IMU initialization unsuccessful.");
+        } else {
+          data_logger_.LogEvent(LogType::kInfo, "IMU INITIALIZED");
+          imu_initialized = true;
+          Serial.println("ISM330DHCX IMU initialized successfully.");
+        } 
+        imu.ACC_SetFullScale(16);
+        imu.GYRO_SetFullScale(2000);
+        imu.FIFO_Set_Mode(ISM330DHCX_STREAM_MODE);   // continuous overwrite
+        imu.FIFO_ACC_Set_BDR(104);
+        imu.FIFO_GYRO_Set_BDR(104);
+        imu.ACC_SetOutputDataRate(104);
+        imu.GYRO_SetOutputDataRate(104);
+        imu.ACC_Enable();
+        imu.GYRO_Enable();
+
+        Serial.println("Computing initial state from IMU readings...");
+
+        delay(100); // wait for IMU buffer to fill up with initial readings
+
+        Sensors::IMU_Data_ imu_data_initial;
+
+        uint16_t init_samples;
+
+        imu.FIFO_Get_Num_Samples(&init_samples);
+        if (init_samples > SAMPLE_THRESHOLD) {
+          imu_data_initial = readIMU(init_samples);
+          // Use initial accelerometer z-axis reading as reference for vertical velocity
+          Sensors::initial_state_ = _computeInitialState(imu_data_initial);
+        }
+}
+
+Sensors::InitialState Sensors::_computeInitialState(const Sensors::IMU_Data_& data) {
+  InitialState state;
+
+  // ── linear  ────────────────────────────────────────────────
+  float acc_ms2 = data.az;
+  state.linear = Eigen::Vector3f(0.0f, 0.0f, acc_ms2);
+  // ── angular ────────────────────────────────────────────────
+
+  float ori_z = (float)data.gz;
+  float ori_y = (float)data.gy;
+  float ori_x = (float)data.gx;
+
+  state.angular = Eigen::Matrix<float, 6, 1>();
+
+  state.angular << 0, ori_x, 0, ori_y, 0, ori_z;
+
+  state.linear_offsets[0] = 0.0;
+  state.linear_offsets[1] = 0.0;
+  state.linear_offsets[2] = 0.0;
+
+  state.angular_rate_offsets[0] = 0.0;
+  state.angular_rate_offsets[1] = 0.0;
+  state.angular_rate_offsets[2] = 0.0;
+
+  return state;
+}
+
+void Sensors::initialiseFilters() {
   //creating kalman filter for accelerometer
 
   const int acc_n = 3; // states:       [position, velocity, acceleration]
@@ -228,9 +311,9 @@ void Sensors::Initialize() {
 
   // R — gyro measurement noise in (°/s)²
   gyr_R.setZero();
-  gyr_R(0,0) = gyr_var_dps2;
-  gyr_R(1,1) = gyr_var_dps2;
-  gyr_R(2,2) = gyr_var_dps2;
+  gyr_R(0,0) = gyr_var_dps2 * 50;
+  gyr_R(1,1) = gyr_var_dps2 * 50;
+  gyr_R(2,2) = gyr_var_dps2 * 50;
 
   // Q — process noise in (°)² and (°/s)², block diagonal
   gyr_Q.setZero();
@@ -243,6 +326,9 @@ void Sensors::Initialize() {
   }
   gyr_Q *= gyr_var_dps2;
 
+  const double gyr_Q_scale = 1;   // tune this value
+  gyr_Q *= gyr_var_dps2 * gyr_Q_scale;
+
   // P — initial covariance in (°)² and (°/s)²
   gyr_P.setZero();
   for (int axis = 0; axis < 3; axis++) {
@@ -253,63 +339,76 @@ void Sensors::Initialize() {
 
   Eigen::VectorXd gyr_x0 = initial_state_.angular.cast<double>();
   GyroKalman.init(gyr_A, gyr_Q, gyr_R, gyr_H, gyr_P, 0.0, gyr_x0);
-
 }
 
-void Sensors::initialize_IMU() {
+void Sensors::calibrateIMU() {
+  Serial.println("IMU calibration starting — hold still for 5 seconds...");
 
-        if (!imu.begin()) {
-          data_logger_.LogEvent(LogType::kCritical, "IMU INIT FAILURE");
-          imu_initialized = false;
-          Serial.println("ISM330DHCX IMU initialization unsuccessful.");
-        } else {
-          data_logger_.LogEvent(LogType::kInfo, "IMU INITIALIZED");
-          imu_initialized = true;
-          Serial.println("ISM330DHCX IMU initialized successfully.");
-        } 
-        imu.ACC_SetFullScale(16);
-        imu.GYRO_SetFullScale(2000);
-        imu.FIFO_Set_Mode(ISM330DHCX_STREAM_MODE);   // continuous overwrite
-        imu.FIFO_ACC_Set_BDR(104);
-        imu.FIFO_GYRO_Set_BDR(104);
-        imu.ACC_SetOutputDataRate(104);
-        imu.GYRO_SetOutputDataRate(104);
-        imu.ACC_Enable();
-        imu.GYRO_Enable();
+  // Accumulate samples over 5 seconds
+  unsigned long calibration_start = millis();
 
-        delay(100);
+  Eigen::Vector3d acc_sum = Eigen::Vector3d::Zero();
+  Eigen::Vector3d gyr_sum = Eigen::Vector3d::Zero();
+  Eigen::Vector3d gyr;
+  Eigen::Vector3d acc;
+  int sample_count = 0;
 
-        // add clearance delay here to reduce IMU vibration
+  while (millis() - calibration_start < constants::CALIBRATION_DURATION_MS) {
+    uint16_t samples;
+    imu.FIFO_Get_Num_Samples(&samples);
 
-        IMU_Data_ imu_data_initial;
+    if (samples > SAMPLE_THRESHOLD) {
+      IMU_Data_ cal_data = readIMU(samples);
+      
+      acc << cal_data.ax, cal_data.ay, cal_data.az; 
+      gyr << cal_data.gx, cal_data.gy, cal_data.gz;
 
-        uint16_t init_samples;
+      acc_sum += acc;
+      gyr_sum += gyr;
+      sample_count++;
+    }
 
-        imu.FIFO_Get_Num_Samples(&init_samples);
-        if (init_samples > SAMPLE_THRESHOLD) {
-          imu_data_initial = readIMU(init_samples);
-          // Use initial accelerometer z-axis reading as reference for vertical velocity
-          Sensors::initial_state_ = _computeInitialState(imu_data_initial);
-        }
-}
+    delay(10);  // ~100Hz polling rate, matches IMU ODR
+  }
 
-Sensors::InitialState Sensors::_computeInitialState(const Sensors::IMU_Data_& data) {
-  InitialState state;
+  if (sample_count == 0) {
+    Serial.println("Calibration failed — no samples received.");
+    return;
+  }
 
-  // ── linear  ────────────────────────────────────────────────
-  float acc_ms2 = data.az * MG_TO_MPS2;
-  state.linear = Eigen::Vector3f(0.0f, 0.0f, acc_ms2);
-  // ── angular ────────────────────────────────────────────────
+  // Average over all samples
+  Eigen::VectorXd acc_mean = acc_sum / sample_count;
+  Eigen::VectorXd gyr_mean = gyr_sum / sample_count;
 
-  float ori_z = (float)data.gz / 1000.0f;
-  float ori_y = (float)data.gy / 1000.0f;
-  float ori_x = (float)data.gx / 1000.0f;
+  // Linear offsets — position and velocity should be 0, gravity subtracted from acc
+  Sensors::initial_state_.linear_offsets[0] = -acc_mean(0);   // position  offset
+  Sensors::initial_state_.linear_offsets[1] = -acc_mean(1);   // velocity  offset
+  Sensors::initial_state_.linear_offsets[2] = -acc_mean(2);   // acc offset (residual after gravity removal)
 
-  state.angular = Eigen::Matrix<float, 6, 1>();
+  // Angular rate offsets — gyro bias at rest should be 0
+  Sensors::initial_state_.angular_rate_offsets[0] = -gyr_mean(0);  // roll_rate  offset
+  Sensors::initial_state_.angular_rate_offsets[1] = -gyr_mean(1);  // pitch_rate offset
+  Sensors::initial_state_.angular_rate_offsets[2] = -gyr_mean(2);  // yaw_rate   offset
 
-  state.angular << 0, ori_x, 0, ori_y, 0, ori_z;
+  Serial.print("IMU calibration complete ("); 
+  Serial.print(sample_count); 
+  Serial.println(" samples).");
+  Serial.println("Offsets:");
+  Serial.print("  linear (pos, vel, acc): ");
+  Serial.print(Sensors::initial_state_.linear_offsets[0], 4); Serial.print(", ");
+  Serial.print(Sensors::initial_state_.linear_offsets[1], 4); Serial.print(", ");
+  Serial.print(Sensors::initial_state_.linear_offsets[2], 4); Serial.println(" m/s^2");
+  Serial.print("  angular (roll, pitch, yaw): ");
+  Serial.print(Sensors::initial_state_.angular_offsets[0], 4); Serial.print(", ");
+  Serial.print(Sensors::initial_state_.angular_offsets[1], 4); Serial.print(", ");
+  Serial.print(Sensors::initial_state_.angular_offsets[2], 4); Serial.println(" deg");
+  Serial.print("  angular rate (roll, pitch, yaw): ");
+  Serial.print(Sensors::initial_state_.angular_rate_offsets[0], 4); Serial.print(", ");
+  Serial.print(Sensors::initial_state_.angular_rate_offsets[1], 4); Serial.print(", ");
+  Serial.print(Sensors::initial_state_.angular_rate_offsets[2], 4); Serial.println(" deg/s");
 
-  return state;
+  AccKalman.reset();
+  // GyroKalman.reset();
 }
 
 void Sensors::initializeMagnetometer() {
@@ -400,12 +499,12 @@ Sensors::IMU_Data_ Sensors::readIMU(uint16_t samples_to_read) {
     // axis rotation fixed to make accelerometer z-axis point upwards
     if (acc_available && gyr_available) {
       
-      imu_data.az = accelerometer[0];
-      imu_data.ay = accelerometer[1];
-      imu_data.ax = -accelerometer[2];
-      imu_data.gz = gyroscope[0];
-      imu_data.gy = gyroscope[1];
-      imu_data.gx = -gyroscope[2];
+      imu_data.az = accelerometer[0] * MG_TO_MPS2;
+      imu_data.ay = accelerometer[1] * MG_TO_MPS2;
+      imu_data.ax = -accelerometer[2] * MG_TO_MPS2;
+      imu_data.gz = gyroscope[0] / 1000.0f; // Convert from mdps to dps
+      imu_data.gy = gyroscope[1] / 1000.0f; // Convert from mdps to dps
+      imu_data.gx = -gyroscope[2] / 1000.0f; // Convert from mdps to dps
       acc_available = false;
       gyr_available = false;
       
@@ -491,9 +590,9 @@ VectorXd Sensors::AccKalmanUpdate(int32_t z) {
 VectorXd Sensors::GyroKalmanUpdate(int32_t gx, int32_t gy, int32_t gz) {
 
   Eigen::VectorXd z_vector(3);
-  z_vector << static_cast<double>(gx) / 1000.0,
-            static_cast<double>(gy) / 1000.0,
-            static_cast<double>(gz) / 1000.0; 
+  z_vector << static_cast<double>(gx),
+            static_cast<double>(gy),
+            static_cast<double>(gz); 
   GyroKalman.update(z_vector);
   return GyroKalman.state();
 }

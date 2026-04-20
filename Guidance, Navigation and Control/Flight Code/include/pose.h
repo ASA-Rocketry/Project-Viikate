@@ -38,6 +38,8 @@ public:
 
   void update(const Eigen::VectorXd& z, double dt, const Eigen::MatrixXd A);
 
+  void reset();
+
   Eigen::VectorXd state() { return x_hat; };
   double time() { return t; };
 

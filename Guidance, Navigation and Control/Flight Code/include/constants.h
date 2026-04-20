@@ -42,6 +42,8 @@ namespace constants {
     static constexpr float kServoTrim2 = 0.0f;
     static constexpr float kServoTrim3 = 0.0f;
     static constexpr float kServoTrim4 = 0.0f;
+
+    static const unsigned long CALIBRATION_DURATION_MS = 5000;
 }
 
 /**

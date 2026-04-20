@@ -3,8 +3,6 @@
 #include <Arduino.h>
 #include <ArduinoEigen.h>
 
-
-
 KalmanFilter::KalmanFilter(double dt,
                              const Eigen::MatrixXd& A,
                              const Eigen::MatrixXd& Q,
@@ -76,4 +74,10 @@ void KalmanFilter::update(const Eigen::VectorXd& y, double dt, const Eigen::Matr
     this->A = A;
     this->dt = dt;
     update(y);
+}
+
+void KalmanFilter::reset() {
+    x_hat.setZero();
+    P = P0;
+    t = t0;
 }

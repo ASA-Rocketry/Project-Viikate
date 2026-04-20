@@ -40,6 +40,8 @@ void loop() {
   Serial.print("Orientation (x, y, z): "); Serial.print(data.oriX); Serial.print(", "); Serial.print(data.oriY); Serial.print(", "); Serial.println(data.oriZ);
   Serial.print("Mag: "); Serial.print(data.magX); Serial.print(", "); Serial.print(data.magY); Serial.print(", "); Serial.println(data.magZ), Serial.print("Heading: "); Serial.println(data.heading);
   Serial.println("--------------------");
+
+  control.PID(0.0f, data.oriZ); // Example: control to maintain 0 degrees orientation around X-axis
   delay(50);
   // Controller.control(data)
 }
