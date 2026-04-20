@@ -8,12 +8,16 @@ namespace constants {
     static constexpr float kGravity = 9.81f;
 
     // Pins
-    static constexpr int kRbfPin = 2;
-    static constexpr int kCsPin = 10;
     static constexpr int kServo1Pin = 0;
     static constexpr int kServo2Pin = 0;
     static constexpr int kServo3Pin = 0;
     static constexpr int kServo4Pin = 0;
+
+    static constexpr int kRbfPin = 2;
+    static constexpr int kCsPin = 10;
+    static constexpr int kMISOPin = 12;   
+    static constexpr int kMOSIPin = 11;
+    static constexpr int kSCKPin  = 13;  
 
     // PID parameters
     static constexpr float kProportional = 0.0f;
@@ -73,16 +77,28 @@ struct FlightData {
     float rotY;
 
     /** @brief [rad/s] Angular velocity around the rocket's longitudinal (Z) axis. */
-    float rotZ;            
+    float rotZ;
+
+    /** @brief [rad] Orientation around the rocket's X-axis. */
+    float oriX;
+
+    /** @brief [rad] Orientation around the rocket's Y-axis. */
+    float oriY;
+
+    /** @brief [rad] Orientation around the rocket's longitudinal (Z) axis. */
+    float oriZ;
 
     /** @brief [\muT] Strength of magnetic field on the rocket's X-Axis */
-    float magX;
+    double magX;
 
     /** @brief [\muT] Strength of magnetic field on the rocket's Y-Axis */
-    float magY;
+    double magY;
 
     /** @brief [\muT] Strength of magnetic field on the rocket's Z-Axis */
-    float magZ;
+    double magZ;
+
+    /** @brief [rad] Magnetic heading relative to true north. */
+    double heading;
     
     /** @brief [m/s^2] Total magnitude of the acceleration vector (G-force). */
     float accelMagnitude;    

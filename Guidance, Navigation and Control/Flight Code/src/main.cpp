@@ -6,7 +6,7 @@
 #include "control_hardware.h"
 
 DataLogger data_logger;
-StateMachine state_machine;
+StateMachine state_machine(data_logger);
 Sensors sensors(data_logger);
 ControlHardware control_hardware;
 Control control;
@@ -28,6 +28,18 @@ void setup() {
 void loop() {
   FlightData data = sensors.ReadFlightData();
   data_logger.LogFlightData(data);
+  // Print values to Serial
+  Serial.print("Altitude: "); Serial.println(data.altitude);
+  Serial.print("Vertical Velocity: "); Serial.println(data.verticalVelocity);
+  Serial.print("AccelZ: "); Serial.println(data.accZ);
+  Serial.print("RotZ: "); Serial.println(data.rotZ);
+  Serial.print("AccelMagnitude: "); Serial.println(data.accelMagnitude);
+  Serial.print("RBF Removed: "); Serial.println(data.rbfRemoved);
+  Serial.print("Acc (x, y, z): "); Serial.print(data.accX); Serial.print(", "); Serial.print(data.accY); Serial.print(", "); Serial.println(data.accZ);
+  Serial.print("Gyro Angular Rate (x, y, z): "); Serial.print(data.rotX); Serial.print(", "); Serial.print(data.rotY); Serial.print(", "); Serial.println(data.rotZ);
+  Serial.print("Orientation (x, y, z): "); Serial.print(data.oriX); Serial.print(", "); Serial.print(data.oriY); Serial.print(", "); Serial.println(data.oriZ);
+  Serial.print("Mag: "); Serial.print(data.magX); Serial.print(", "); Serial.print(data.magY); Serial.print(", "); Serial.println(data.magZ), Serial.print("Heading: "); Serial.println(data.heading);
+  Serial.println("--------------------");
+  delay(50);
   // Controller.control(data)
-  delay(100);
 }
