@@ -41,7 +41,7 @@ double scaledY = 0;
 double scaledZ = 0;
 double heading = 0;
 
-double dt = 1/1000.000f; // Time step between samples
+double dt = 1.0 /1000.0; // Time step between samples
 
 bool use_filtered_data = true; //whether to log and display filtered data
 
@@ -99,7 +99,7 @@ FlightData Sensors::ReadFlightData() {
       pow(imu_data.ay, 2) +
       pow(imu_data.az, 2)
       );
-    } else {//if filtered data is to be used
+    } else { //if filtered data is to be used
       flight_data.accX = imu_data.ax * MG_TO_MPS2; // Convert from milli-g to m/s^2
       flight_data.accY = imu_data.ay * MG_TO_MPS2;
       
@@ -117,7 +117,7 @@ FlightData Sensors::ReadFlightData() {
       flight_data.oriY = gyr_estimate(2);
       flight_data.oriZ = gyr_estimate(4);
 
-      flight_data.rotX = gyr_estimate(1); // Convert from mdps to dps
+      flight_data.rotX = gyr_estimate(1); 
       flight_data.rotY = gyr_estimate(3);
       flight_data.rotZ = gyr_estimate(5);
 
@@ -159,8 +159,8 @@ void Sensors::Initialize() {
   Serial.print("  acceleration (z): "); Serial.print(initial_state_.linear(2), 4); Serial.println(" m/s^2");
 
   Serial.println("Angular [orientation, angular_velocity]:");
-  Serial.println("  orientation (X, Y, Z ):      "); Serial.println(initial_state_.angular(0), 4); Serial.println(initial_state_.angular(1), 4); Serial.println(initial_state_.angular(2), 4); Serial.println(" rad");
-  Serial.println("  angular_velocity: "); Serial.println(initial_state_.angular(3), 4); Serial.println(initial_state_.angular(4), 4); Serial.println(initial_state_.angular(5), 4); Serial.println(" rad/s");
+  Serial.println("  orientation (X, Y, Z ):      "); Serial.println(initial_state_.angular(0), 4); Serial.println(initial_state_.angular(1), 4); Serial.println(initial_state_.angular(2), 4); Serial.println(" degree");
+  Serial.println("  angular_velocity: "); Serial.println(initial_state_.angular(3), 4); Serial.println(initial_state_.angular(4), 4); Serial.println(initial_state_.angular(5), 4); Serial.println(" degree/s");
 
   Serial.println("====================");
   //creating kalman filter for accelerometer
@@ -207,12 +207,11 @@ void Sensors::Initialize() {
   Eigen::MatrixXd gyr_P(gyr_n, gyr_n);
 
   // sigma in degrees/s,  var in (degrees/s)²
-  const double gyr_noise_density_mdps = 4.0;
-  const double gyr_noise_density_dps  = gyr_noise_density_mdps * 1e-3;   // mdps -> dps
+  const double gyr_noise_density_mdps = 8.0;
+  const double gyr_noise_density_dps  = gyr_noise_density_mdps * 1e-3; 
   const double gyr_sigma_dps          = gyr_noise_density_dps * sqrt(104.0);
-  const double gyr_var_dps2           = gyr_sigma_dps * gyr_sigma_dps;   // (°/s)²
+  const double gyr_var_dps2           = gyr_sigma_dps * gyr_sigma_dps;  
 
-  // Block diagonal state transition
   gyr_A.setZero();
   gyr_A(0,0) = 1;  gyr_A(0,1) = dt;   // roll    (°)  += roll_rate  (°/s) * dt
   gyr_A(1,1) = 1;
@@ -308,7 +307,7 @@ Sensors::InitialState Sensors::_computeInitialState(const Sensors::IMU_Data_& da
 
   state.angular = Eigen::Matrix<float, 6, 1>();
 
-  state.angular << 0.0f, 0.0f, 0.0f, ori_x, ori_y, ori_z;
+  state.angular << 0, ori_x, 0, ori_y, 0, ori_z;
 
   return state;
 }
@@ -494,7 +493,7 @@ VectorXd Sensors::GyroKalmanUpdate(int32_t gx, int32_t gy, int32_t gz) {
   Eigen::VectorXd z_vector(3);
   z_vector << static_cast<double>(gx) / 1000.0,
             static_cast<double>(gy) / 1000.0,
-            static_cast<double>(gz) / 1000.0;
+            static_cast<double>(gz) / 1000.0; 
   GyroKalman.update(z_vector);
   return GyroKalman.state();
 }
