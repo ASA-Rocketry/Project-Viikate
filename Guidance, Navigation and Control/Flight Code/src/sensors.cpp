@@ -110,15 +110,15 @@ FlightData Sensors::ReadFlightData() {
       correctedGY = imu_data.gy + initial_state_.angular_rate_offsets[1];
       correctedGZ = imu_data.gz + initial_state_.angular_rate_offsets[2];
 
-      flight_data.accX = correctedAX; // Convert from milli-g to m/s^2
-      flight_data.accY = correctedAY;
       //get z axis pos/vel/acc estimate from kalman filter
-      Eigen::VectorXd acc_estimate = AccKalmanUpdate(correctedAZ);
+      Eigen::VectorXd acc_estimate = AccKalmanUpdate(correctedAX, correctedAY, correctedAZ);
 
-      //update accZ, altitude and velocity based on acc_estimates
-      flight_data.accZ = acc_estimate(2);
-      flight_data.altitude         = acc_estimate(0);
-      flight_data.verticalVelocity = acc_estimate(1);
+      //update accX, accY, accZ, altitude and velocity based on acc_estimates
+      flight_data.accX = acc_estimate(2); 
+      flight_data.accY = acc_estimate(5);
+      flight_data.accZ = acc_estimate(8);
+      flight_data.altitude         = acc_estimate(6);
+      flight_data.verticalVelocity = acc_estimate(7);
 
       Eigen::VectorXd gyr_estimate = GyroKalmanUpdate(correctedGX, correctedGY, correctedGZ);
 
@@ -248,8 +248,8 @@ Sensors::InitialState Sensors::_computeInitialState(const Sensors::IMU_Data_& da
 void Sensors::initialiseFilters() {
   //creating kalman filter for accelerometer
 
-  const int acc_n = 3; // states:       [position, velocity, acceleration]
-  const int acc_m = 1; // measurements: [acceleration]
+  const int acc_n = 9; // states:       [position, velocity, acceleration for x, y and z axis]
+  const int acc_m = 3; // measurements: [acceleration for x, y and z axis]
 
   Eigen::MatrixXd acc_A(acc_n, acc_n); // state transition
   Eigen::MatrixXd acc_Q(acc_n, acc_n); // process noise
@@ -260,22 +260,51 @@ void Sensors::initialiseFilters() {
   // Noise variance from accelerometer noise density (60 ug/sqrt(Hz) at 104Hz)
   const double acc_var = 1.444e-5;
 
-  acc_A << 1, dt, pow(dt,2)/2,
-           0,  1,          dt,
-           0,  0,           1;
+  //there is an easier way of doing this, however i alr typed A and H out lmao
+  acc_A << 1, dt, pow(dt,2)/2, 0,  0,           0, 0,  0,           0, //x axis pos
+           0,  1,          dt, 0,  0,           0, 0,  0,           0, //x axis vel
+           0,  0,           1, 0,  0,           0, 0,  0,           0, //x axis acc
+           0,  0,           0, 1, dt, pow(dt,2)/2, 0,  0,           0, //y axis pos
+           0,  0,           0, 0,  1,          dt, 0,  0,           0, //y axis vel
+           0,  0,           0, 0,  0,           1, 0,  0,           0, //y axis acc
+           0,  0,           0, 0,  0,           0, 1, dt, pow(dt,2)/2, //z axis pos
+           0,  0,           0, 0,  0,           0, 0,  1,          dt, //z axis vel
+           0,  0,           0, 0,  0,           0, 0,  0,           1; //z axis acc
 
-  acc_H << 0, 0, 1;
+  acc_H << 0, 0, 1, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 1, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 1;
 
-  acc_R << acc_var;
+  // R — accelerometer measurement noise in (ms^-2)²
+  acc_R.setZero();
+  acc_R(0,0) = acc_var;
+  acc_R(1,1) = acc_var;
+  acc_R(2,2) = acc_var;
 
-  acc_Q << pow(dt,4)/4, pow(dt,3)/2, pow(dt,2)/2,
-           pow(dt,3)/2,   pow(dt,2),          dt,
-           pow(dt,2)/2,          dt,            1;
+  // Q — process noise
+  acc_Q.setZero();
+  for (int axis = 0; axis < 3; axis++) {
+    int i = axis * 3;
+    acc_Q(i,   i  ) = pow(dt,4)/4; 
+    acc_Q(i,   i+1) = pow(dt,3)/2;          
+    acc_Q(i+1, i  ) = pow(dt,3)/2;
+    acc_Q(i+2, i  ) = pow(dt,2)/2;   
+    acc_Q(i,   i+2) = pow(dt,2)/2;
+    acc_Q(i+1, i+1) = pow(dt,2);    
+    acc_Q(i+2, i+1) = dt;
+    acc_Q(i+1, i+2) = dt;
+    acc_Q(i+2, i+2) = 1;
+  }
   acc_Q *= acc_var;
 
-  acc_P << 500,       0,       0,
-             0,      10,       0,
-             0,       0, acc_var;
+  // P — initial covariance
+  acc_P.setZero();
+  for (int axis = 0; axis < 3; axis++) {
+    int i = axis * 3;
+    acc_P(i,   i  ) = 500;        // pos - default value for now
+    acc_P(i+1, i+1) = 10;         //vel - default value for now
+    acc_P(i+2, i+2) = acc_var;    // rate  — matches sensor noise
+  }
 
   Eigen::VectorXd acc_x0 = initial_state_.linear.cast<double>();
   AccKalman.init(acc_A, acc_Q, acc_R, acc_H, acc_P, 0.0, acc_x0);
@@ -579,10 +608,12 @@ float Sensors::readBarometer() {
 
 }
 
-VectorXd Sensors::AccKalmanUpdate(int32_t z) {
+VectorXd Sensors::AccKalmanUpdate(int32_t ax, int32_t ay, int32_t az) {
 
-  Eigen::VectorXd z_vector(1);
-  z_vector << (float)z;
+  Eigen::VectorXd z_vector(3);
+  z_vector << (float)ax,
+              (float)ay,
+              (float)az;
   AccKalman.update(z_vector);
   return AccKalman.state();
 }

@@ -78,7 +78,7 @@ class Sensors {
                 SFE_MMC5983MA mag;
 
                 DataLogger& data_logger_;
-                Eigen::VectorXd AccKalmanUpdate(int32_t z);
+                Eigen::VectorXd AccKalmanUpdate(int32_t ax, int32_t ay, int32_t az);
                 Eigen::VectorXd GyroKalmanUpdate(int32_t gx, int32_t gy, int32_t gz);
 };
 
