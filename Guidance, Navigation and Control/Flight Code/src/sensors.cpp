@@ -222,8 +222,13 @@ Sensors::InitialState Sensors::_computeInitialState(const Sensors::IMU_Data_& da
   InitialState state;
 
   // ── linear  ────────────────────────────────────────────────
-  float acc_ms2 = data.az;
-  state.linear = Eigen::Vector3f(0.0f, 0.0f, acc_ms2);
+  float acc_x = data.ax;
+  float acc_y = data.ay;
+  float acc_z = data.az;
+
+  state.linear = Eigen::Matrix<float, 9, 1>();
+  
+  state.linear << 0, 0, acc_x, 0, 0, acc_y, 0, 0, acc_z;
   // ── angular ────────────────────────────────────────────────
 
   float ori_z = (float)data.gz;
@@ -274,6 +279,11 @@ void Sensors::initialiseFilters() {
   acc_H << 0, 0, 1, 0, 0, 0, 0, 0, 0,
            0, 0, 0, 0, 0, 1, 0, 0, 0,
            0, 0, 0, 0, 0, 0, 0, 0, 1;
+
+  acc_H.setZero();
+  acc_H(0,2) = 1;  
+  acc_H(1,5) = 1;  
+  acc_H(2,8) = 1;
 
   // R — accelerometer measurement noise in (ms^-2)²
   acc_R.setZero();

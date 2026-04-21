@@ -18,7 +18,7 @@ void setup() {
   Serial.begin(115200); 
   data_logger.Initialize(); // Initialize this before anything else to log failures
   sensors.Initialize();
-  control_hardware.Initialize();
+  //control_hardware.Initialize();
   control.Initialize(); 
   data_logger.LogEvent(LogType::kInfo, "SETUP COMPLETE");
 

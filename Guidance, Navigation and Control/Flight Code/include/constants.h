@@ -22,9 +22,9 @@ namespace constants {
     static constexpr int kSCKPin  = 13;  
 
     // PID parameters
-    static constexpr float kProportional = 1.0f;
-    static constexpr float kIntegrator = 0.5f;
-    static constexpr float kDerivative = 0.01f;
+    static constexpr float kProportional = (float)(0.1745*(180.0/PI));
+    static constexpr float kIntegrator = 0.0f;
+    static constexpr float kDerivative = (float)(0.06*(180/PI));
 
     // PID output limits
     static constexpr float kMaxControlAngle = 30.0f;  // Max canard deflection in degrees

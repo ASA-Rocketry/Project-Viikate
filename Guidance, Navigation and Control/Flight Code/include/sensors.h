@@ -46,7 +46,7 @@ class Sensors {
                 };
 
                 struct InitialState {
-                        Eigen::Vector3f linear;  
+                        Eigen::Matrix<float, 9, 1> linear;  
                         Eigen::Matrix<float, 6, 1> angular;
                         double linear_offsets[3];
                         double angular_offsets[3];
