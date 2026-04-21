@@ -42,6 +42,14 @@ void Control::PID(float set_angle_deg, float current_angle_deg) {
   float Ki = constants::kIntegrator;
   float Kd = constants::kDerivative;
 
+  // Calculate angular error
+  float angular_error = set_angle_deg - current_angle_deg;
+
+  //if current angle is small, D output = 0
+  if ((previous_error_ - angular_error) < 1.5 && (previous_error_ - angular_error) > -1.5) {
+    Kd = 0.00f;
+  }
+
   // Maximum and Minimum output values from constants.h.
   float max_output = constants::kMaxControlAngle;
   float min_output = constants::kMinControlAngle;
@@ -55,8 +63,6 @@ void Control::PID(float set_angle_deg, float current_angle_deg) {
     dt = 0.001f;  // Minimum 1ms timestep
   }
 
-  // Calculate angular error
-  float angular_error = set_angle_deg - current_angle_deg;
 
   // Proportional term
   float p_term = Kp * angular_error;  

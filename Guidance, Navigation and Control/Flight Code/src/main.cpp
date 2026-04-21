@@ -51,7 +51,7 @@ void loop() {
   Serial.println("Control error:");
   error = control.get_error();
   Serial.println(error);
-  if (abs(error) < 5.0f) { // Example threshold for critical error
+  if (abs(error) < 2.0f) { // Example threshold for critical error
     digitalWrite(constants::kLEDPin, HIGH); // Turn on LED if error is small (indicating good control)
   } else {
     digitalWrite(constants::kLEDPin, LOW); // Turn off LED if error is

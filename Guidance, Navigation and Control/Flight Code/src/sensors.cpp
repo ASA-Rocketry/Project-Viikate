@@ -131,9 +131,9 @@ FlightData Sensors::ReadFlightData() {
       flight_data.rotZ = gyr_estimate(5);
 
       flight_data.accelMagnitude = sqrt(
-      pow(acc_estimate(0), 2) +
-      pow(acc_estimate(1), 2) +
-      pow(acc_estimate(2), 2)
+      pow(acc_estimate(2), 2) +
+      pow(acc_estimate(5), 2) +
+      pow(acc_estimate(8), 2)
       );      
     };
   }
@@ -275,10 +275,6 @@ void Sensors::initialiseFilters() {
            0,  0,           0, 0,  0,           0, 1, dt, pow(dt,2)/2, //z axis pos
            0,  0,           0, 0,  0,           0, 0,  1,          dt, //z axis vel
            0,  0,           0, 0,  0,           0, 0,  0,           1; //z axis acc
-
-  acc_H << 0, 0, 1, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 1, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 1;
 
   acc_H.setZero();
   acc_H(0,2) = 1;  
