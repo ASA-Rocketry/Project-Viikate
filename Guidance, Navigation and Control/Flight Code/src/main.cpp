@@ -14,8 +14,35 @@ Control control;
 
 float error;
 
+void sendToSerial(Print &serial, FlightData data, Control control) {
+  // Print values to Serial
+  serial.print("Altitude: "); serial.println(data.altitude);
+  serial.print("Vertical Velocity: "); serial.println(data.verticalVelocity);
+  serial.print("AccelZ: "); serial.println(data.accZ);
+  serial.print("RotZ: "); serial.println(data.rotZ);
+  serial.print("AccelMagnitude: "); serial.println(data.accelMagnitude);
+  serial.print("RBF Removed: "); serial.println(data.rbfRemoved);
+  serial.print("Acc (x, y, z): "); serial.print(data.accX); serial.print(", "); serial.print(data.accY); serial.print(", "); serial.println(data.accZ);
+  serial.print("Gyro Angular Rate (x, y, z): "); serial.print(data.rotX); serial.print(", "); serial.print(data.rotY); serial.print(", "); serial.println(data.rotZ);
+  serial.print("Orientation (x, y, z): "); serial.print(data.oriX); serial.print(", "); serial.print(data.oriY); serial.print(", "); serial.println(data.oriZ);
+  serial.print("Mag: "); serial.print(data.magX); serial.print(", "); serial.print(data.magY); serial.print(", "); serial.println(data.magZ); serial.print("Heading: "); serial.println(data.heading);
+  serial.println("--------------------");
+
+  serial.println("Control error:");
+  error = control.get_error();
+  serial.println(error);
+  if (abs(error) < 2.0f) { // Example threshold for critical error
+    digitalWrite(constants::kLEDPin, HIGH); // Turn on LED if error is small (indicating good control)
+  } else {
+    digitalWrite(constants::kLEDPin, LOW); // Turn off LED if error is
+  // delay(50);
+  }
+  // Controller.control(data)
+}
+
 void setup() {
-  Serial.begin(115200); 
+  Serial.begin(9600); 
+  Serial8.begin(9600); 
   data_logger.Initialize(); // Initialize this before anything else to log failures
   sensors.Initialize();
   //control_hardware.Initialize();
@@ -33,29 +60,13 @@ void setup() {
 void loop() {
   FlightData data = sensors.ReadFlightData();
   data_logger.LogFlightData(data);
-  // Print values to Serial
-  Serial.print("Altitude: "); Serial.println(data.altitude);
-  Serial.print("Vertical Velocity: "); Serial.println(data.verticalVelocity);
-  Serial.print("AccelZ: "); Serial.println(data.accZ);
-  Serial.print("RotZ: "); Serial.println(data.rotZ);
-  Serial.print("AccelMagnitude: "); Serial.println(data.accelMagnitude);
-  Serial.print("RBF Removed: "); Serial.println(data.rbfRemoved);
-  Serial.print("Acc (x, y, z): "); Serial.print(data.accX); Serial.print(", "); Serial.print(data.accY); Serial.print(", "); Serial.println(data.accZ);
-  Serial.print("Gyro Angular Rate (x, y, z): "); Serial.print(data.rotX); Serial.print(", "); Serial.print(data.rotY); Serial.print(", "); Serial.println(data.rotZ);
-  Serial.print("Orientation (x, y, z): "); Serial.print(data.oriX); Serial.print(", "); Serial.print(data.oriY); Serial.print(", "); Serial.println(data.oriZ);
-  Serial.print("Mag: "); Serial.print(data.magX); Serial.print(", "); Serial.print(data.magY); Serial.print(", "); Serial.println(data.magZ), Serial.print("Heading: "); Serial.println(data.heading);
-  Serial.println("--------------------");
+
+  if (Serial8.available()) {
+    char incomingChar = Serial8.read();
+    Serial.println(incomingChar);  // Debug to USB
+  }
 
   control.PID(0.0f, -data.oriZ); // Example: control to maintain 90 degrees orientation around Z-axis
-
-  Serial.println("Control error:");
-  error = control.get_error();
-  Serial.println(error);
-  if (abs(error) < 2.0f) { // Example threshold for critical error
-    digitalWrite(constants::kLEDPin, HIGH); // Turn on LED if error is small (indicating good control)
-  } else {
-    digitalWrite(constants::kLEDPin, LOW); // Turn off LED if error is
-  // delay(50);
-  }
+  sendToSerial(Serial8, data, control);
   // Controller.control(data)
 }

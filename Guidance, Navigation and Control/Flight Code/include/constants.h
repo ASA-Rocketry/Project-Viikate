@@ -12,6 +12,8 @@ namespace constants {
     static constexpr int kServo2Pin = 4;
     static constexpr int kServo3Pin = 3;
     static constexpr int kServo4Pin = 2;
+    static constexpr int kUARTTxPin = 35;
+    static constexpr int kUARTRxPin = 34;
 
     static constexpr int kLEDPin = 24;
 

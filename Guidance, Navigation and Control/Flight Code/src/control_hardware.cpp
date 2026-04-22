@@ -12,10 +12,7 @@ bool ControlHardware::Initialize() {
   initialisationAnimation();
   delay(5000);
 
-  Serial.println("Control hardware initialized: Servos attached and set to neutral position.");
-
-  // Set all servos to neutral 90 degree position
-  SetCanardAngle(constants::kServoNeutralAngle);
+  Serial.println("Control hardware initialized: Servos attached.");
 
   return true;
 }
