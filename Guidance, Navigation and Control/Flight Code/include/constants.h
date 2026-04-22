@@ -8,22 +8,44 @@ namespace constants {
     static constexpr float kGravity = 9.81f;
 
     // Pins
+    static constexpr int kServo1Pin = 5;
+    static constexpr int kServo2Pin = 4;
+    static constexpr int kServo3Pin = 3;
+    static constexpr int kServo4Pin = 2;
+
+    static constexpr int kLEDPin = 24;
+
     static constexpr int kRbfPin = 2;
     static constexpr int kCsPin = 10;
-    static constexpr int kServo1Pin = 0;
-    static constexpr int kServo2Pin = 0;
-    static constexpr int kServo3Pin = 0;
-    static constexpr int kServo4Pin = 0;
-
-    static const int kMISOPin = 12;   
-    static const int kMOSIPin = 11;
-    static const int kSCKPin  = 13;  
-    static const int kCSPin   = 10; 
+    static constexpr int kMISOPin = 12;   
+    static constexpr int kMOSIPin = 11;
+    static constexpr int kSCKPin  = 13;  
 
     // PID parameters
-    static constexpr float kProportional = 0;
-    static constexpr float kIntegrator = 0;
-    static constexpr float kDerivative = 0;
+    static constexpr float kProportional = (float)(0.1745*(180.0/PI));
+    static constexpr float kIntegrator = 0.0f;
+    static constexpr float kDerivative = (float)(0.09*(180/PI));
+
+    // PID output limits
+    static constexpr float kMaxControlAngle = 30.0f;  // Max canard deflection in degrees
+    static constexpr float kMinControlAngle = -30.0f;  // Min canard deflection in degrees
+
+    // PID effective input range
+    static constexpr float kPidMinAngle = -30.0f;
+    static constexpr float kPidMaxAngle = 30.0f;
+
+    // Servo mapping limits (for ControlHardware)
+    static constexpr float kServoMinAngle = 60.0f;  // Servo minimum command angle in degrees
+    static constexpr float kServoMaxAngle = 120.0f;  // Servo maximum command angle in degrees
+    static constexpr float kServoNeutralAngle = 90.0f;  // Servo neutral command angle
+
+    // servo trimming parameters
+    static constexpr float kServoTrim1 = -10.0f;
+    static constexpr float kServoTrim2 = -10.0f;
+    static constexpr float kServoTrim3 = -10.0f;
+    static constexpr float kServoTrim4 = -10.0f;
+
+    static const unsigned long CALIBRATION_DURATION_MS = 5000;
 }
 
 /**
@@ -59,16 +81,28 @@ struct FlightData {
     float rotY;
 
     /** @brief [rad/s] Angular velocity around the rocket's longitudinal (Z) axis. */
-    float rotZ;            
+    float rotZ;
+
+    /** @brief [rad] Orientation around the rocket's X-axis. */
+    float oriX;
+
+    /** @brief [rad] Orientation around the rocket's Y-axis. */
+    float oriY;
+
+    /** @brief [rad] Orientation around the rocket's longitudinal (Z) axis. */
+    float oriZ;
 
     /** @brief [\muT] Strength of magnetic field on the rocket's X-Axis */
-    float magX;
+    double magX;
 
     /** @brief [\muT] Strength of magnetic field on the rocket's Y-Axis */
-    float magY;
+    double magY;
 
     /** @brief [\muT] Strength of magnetic field on the rocket's Z-Axis */
-    float magZ;
+    double magZ;
+
+    /** @brief [rad] Magnetic heading relative to true north. */
+    double heading;
     
     /** @brief [m/s^2] Total magnitude of the acceleration vector (G-force). */
     float accelMagnitude;    

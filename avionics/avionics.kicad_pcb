@@ -4453,7 +4453,7 @@
 		(descr "LGA-8")
 		(tags "lga land grid array")
 		(property "Reference" "U3"
-			(at -0.175 -3.475 90)
+			(at 2.073528 -5.226472 180)
 			(layer "F.SilkS")
 			(uuid "004ee090-56be-491c-9c73-7a3e75dad922")
 			(effects
@@ -24765,8 +24765,8 @@
 		(uuid "047fb106-057e-4b9f-91fc-921159217000")
 	)
 	(gr_line
-		(start 145 72.4)
-		(end 144.6 72)
+		(start 146.151472 71.248528)
+		(end 145.751472 71.648528)
 		(stroke
 			(width 0.1)
 			(type default)
@@ -24775,8 +24775,8 @@
 		(uuid "0f352cc6-1968-420f-aa44-96493b95b5cd")
 	)
 	(gr_line
-		(start 145 72.4)
-		(end 145.4 72)
+		(start 146.151472 71.248528)
+		(end 145.751472 70.848528)
 		(stroke
 			(width 0.1)
 			(type default)
@@ -24847,8 +24847,8 @@
 		(uuid "2dc8e09a-030a-4d62-9009-afdde057220e")
 	)
 	(gr_circle
-		(center 145 70.4)
-		(end 144.8 70.4)
+		(center 144.151472 71.248528)
+		(end 144.151472 71.448528)
 		(stroke
 			(width 0.1)
 			(type solid)
@@ -24868,8 +24868,8 @@
 		(uuid "4b002f6a-1ef4-40f9-8b97-be4fad0c058f")
 	)
 	(gr_line
-		(start 147 70.4)
-		(end 146.6 70)
+		(start 144.151472 69.248528)
+		(end 143.751472 69.648528)
 		(stroke
 			(width 0.1)
 			(type default)
@@ -24928,8 +24928,8 @@
 		(uuid "78ebafc3-e63b-4ded-a87d-44ceb7dcf92c")
 	)
 	(gr_circle
-		(center 145 70.4)
-		(end 144.4 71)
+		(center 144.151472 71.248528)
+		(end 144.751472 71.848528)
 		(stroke
 			(width 0.1)
 			(type default)
@@ -25035,8 +25035,8 @@
 		(uuid "877f9830-78c4-4f15-abfc-3eacd9059fe6")
 	)
 	(gr_line
-		(start 147 70.4)
-		(end 146.6 70.8)
+		(start 144.151472 69.248528)
+		(end 144.551472 69.648528)
 		(stroke
 			(width 0.1)
 			(type default)
@@ -25562,8 +25562,8 @@
 		(uuid "cf271431-0d93-497e-8431-cac1ef8b5340")
 	)
 	(gr_line
-		(start 145 72.4)
-		(end 145 70.4)
+		(start 146.151472 71.248528)
+		(end 144.151472 71.248528)
 		(stroke
 			(width 0.1)
 			(type default)
@@ -25725,8 +25725,8 @@
 		(uuid "ddae5150-2c38-4ef9-a97e-81ae1a3f4eaf")
 	)
 	(gr_line
-		(start 145 70.4)
-		(end 147 70.4)
+		(start 144.151472 71.248528)
+		(end 144.151472 69.248528)
 		(stroke
 			(width 0.1)
 			(type default)
@@ -26636,7 +26636,7 @@
 		)
 	)
 	(gr_text "Y\n"
-		(at 147.8 70.4 0)
+		(at 144.151472 68.448528 90)
 		(layer "F.SilkS")
 		(uuid "18327a07-8e2f-4b46-a3a8-3630545fd510")
 		(effects
@@ -26660,7 +26660,7 @@
 		)
 	)
 	(gr_text "Z"
-		(at 145 68.9 0)
+		(at 142.651472 71.248528 90)
 		(layer "F.SilkS")
 		(uuid "38990714-7234-41fb-9743-484cc6e50ef0")
 		(effects
@@ -26684,7 +26684,7 @@
 		)
 	)
 	(gr_text "X"
-		(at 145 73.1 0)
+		(at 146.851472 71.248528 90)
 		(layer "F.SilkS")
 		(uuid "6b7b1dc9-591d-4eb5-ae53-f6ce4d4eefed")
 		(effects
@@ -26769,7 +26769,7 @@
 			(extension_offset 0.5)
 			(keep_text_aligned yes)
 		)
-		(gr_text "3,2"
+		(gr_text "3.2"
 			(locked yes)
 			(at 103.65 118.4 90)
 			(layer "F.Fab")
@@ -26809,7 +26809,7 @@
 			(extension_offset 0.5)
 			(keep_text_aligned yes)
 		)
-		(gr_text "3,2"
+		(gr_text "3.2"
 			(locked yes)
 			(at 170.05 61.6 90)
 			(layer "F.Fab")
@@ -26849,7 +26849,7 @@
 			(extension_offset 0.5)
 			(keep_text_aligned yes)
 		)
-		(gr_text "3,2"
+		(gr_text "3.2"
 			(locked yes)
 			(at 101.6 64.05 0)
 			(layer "F.Fab")
@@ -26889,7 +26889,7 @@
 			(extension_offset 0.5)
 			(keep_text_aligned yes)
 		)
-		(gr_text "3,2"
+		(gr_text "3.2"
 			(locked yes)
 			(at 101.6 114.05 0)
 			(layer "F.Fab")
@@ -26929,7 +26929,7 @@
 			(extension_offset 0.5)
 			(keep_text_aligned yes)
 		)
-		(gr_text "3,2"
+		(gr_text "3.2"
 			(locked yes)
 			(at 174.4 114.05 0)
 			(layer "F.Fab")
@@ -26969,7 +26969,7 @@
 			(extension_offset 0.5)
 			(keep_text_aligned yes)
 		)
-		(gr_text "3,2"
+		(gr_text "3.2"
 			(locked yes)
 			(at 103.65 61.6 90)
 			(layer "F.Fab")
@@ -27009,7 +27009,7 @@
 			(extension_offset 0.5)
 			(keep_text_aligned yes)
 		)
-		(gr_text "3,2"
+		(gr_text "3.2"
 			(locked yes)
 			(at 174.4 63.65 0)
 			(layer "F.Fab")
@@ -27049,7 +27049,7 @@
 			(extension_offset 0.5)
 			(keep_text_aligned yes)
 		)
-		(gr_text "3,2"
+		(gr_text "3.2"
 			(locked yes)
 			(at 170.05 118.4 90)
 			(layer "F.Fab")
@@ -38677,7 +38677,7 @@
 		(polygon
 			(pts
 				(xy 152.5 96.5) (xy 100 96.5) (xy 99.9 59.6) (xy 176.4 59.8) (xy 176.496918 91.25) (xy 157.5 91.25)
-				(xy 157.5 96.5) (xy 152.5 96.5)
+				(xy 157.5 96.5)
 			)
 		)
 		(filled_polygon

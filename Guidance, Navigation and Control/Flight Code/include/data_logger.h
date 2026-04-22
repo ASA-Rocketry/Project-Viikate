@@ -8,8 +8,9 @@
 #ifndef FLIGHT_CODE_INCLUDE_DATA_LOGGER_H_
 #define FLIGHT_CODE_INCLUDE_DATA_LOGGER_H_
 
-#include <Arduino.h>
 #include "constants.h"
+#include <Arduino.h>
+#include <SD.h>
 
 /**
  * @class DataLogger
@@ -48,6 +49,11 @@ class DataLogger {
          */
         void LogEvent(const LogType& type, const String& event);
 
+        /**
+         * @brief Closes the files safely at the end of flight.
+         */
+        void Close();
+
     private: 
         /** @brief Flag to enable or disable telemetry logging (Not in use). */
         bool log_flight_data_ = true; 
@@ -57,6 +63,10 @@ class DataLogger {
 
         /** @brief The dynamically generated filename for the event log (e.g., "event1.csv"). */
         String event_file_;
+
+        File flight_data_file_;
+
+        File event_data_file_;
 };
 
 #endif  // FLIGHT_CODE_INCLUDE_DATA_LOGGER_H_
