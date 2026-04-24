@@ -121,4 +121,6 @@ void loop() {
         digitalWrite(constants::kLEDPin, LOW);  // Turn off LED if error is
         delay(50);
     }
+
+    sendToSerial(Serial8, data, control);
 }
