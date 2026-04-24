@@ -34,6 +34,9 @@
             pkgs.python3Packages.pyserial
             pkgs.python3Packages.matplotlib
             pkgs.python3Packages.numpy
+
+            pkgs.platformio
+            pkgs.arduino-ide
           ];
         };
       }
