@@ -2,7 +2,7 @@ import serial
 import sys
 
 # Configuration
-BLUETOOTH_PORT = "/dev/cu.Bluetooth-Incoming-Port"  # Change this based on what device you're using. this if configured to run on MacOS
+BLUETOOTH_PORT = "/dev/tty.MINUNHC05"  # Change this based on what device you're using. this if configured to run on MacOS
 BAUD_RATE = 9600
 TIMEOUT = 1
 
@@ -10,6 +10,7 @@ def main():
     try:
         # Open the Bluetooth serial port
         ser = serial.Serial(BLUETOOTH_PORT, BAUD_RATE, timeout=TIMEOUT)
+        ser.write("AT\r\n".encode())  # Test command to check connection
         print(f"Connected to {BLUETOOTH_PORT} at {BAUD_RATE} baud")
         print("Reading telemetry data... (Press Ctrl+C to stop)\n")
         

@@ -49,13 +49,6 @@ void ControlHardware::SetCanardAngle(float pid_angle_degrees) {
                           constants::kServoMinAngle,
                           constants::kServoMaxAngle);
 
-  Serial.print("Setting canard angle to PID output: ");
-  Serial.print(pid_angle_degrees);
-  Serial.print(" -> Clamped: ");
-  Serial.print(clamped_pid);
-  Serial.print(" -> Servo Angle: ");
-  Serial.println(servo_angle - 90.0f);
-
   // Apply the calculated angle to all four canard servos
   canard_servo1_.write(servo_angle + constants::kServoTrim1);
   canard_servo2_.write(servo_angle + constants::kServoTrim2);
