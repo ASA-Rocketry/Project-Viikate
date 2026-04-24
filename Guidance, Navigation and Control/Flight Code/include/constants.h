@@ -2,53 +2,61 @@
 #define FLIGHT_CODE_INCLUDE_CONSTANTS_H_
 
 #include <Arduino.h>
-// All constants are defined here 
+
+#include <cstddef>
+
+// All constants are defined here
 namespace constants {
-    // Physics
-    static constexpr float kGravity = 9.81f;
+// Physics
+static constexpr float kGravity = 9.81f;
 
-    // Pins
-    static constexpr int kServo1Pin = 5;
-    static constexpr int kServo2Pin = 4;
-    static constexpr int kServo3Pin = 3;
-    static constexpr int kServo4Pin = 2;
-    static constexpr int kUARTTxPin = 35;
-    static constexpr int kUARTRxPin = 34;
+// Pins
+static constexpr int kServo1Pin = 5;
+static constexpr int kServo2Pin = 4;
+static constexpr int kServo3Pin = 3;
+static constexpr int kServo4Pin = 2;
+static constexpr int kUARTTxPin = 35;
+static constexpr int kUARTRxPin = 34;
 
-    static constexpr int kLEDPin = 24;
+static constexpr int kLEDPin = 24;
 
-    static constexpr int kRbfPin = 2;
-    static constexpr int kCsPin = 10;
-    static constexpr int kMISOPin = 12;   
-    static constexpr int kMOSIPin = 11;
-    static constexpr int kSCKPin  = 13;  
+static constexpr int kRbfPin = 2;
+static constexpr int kCsPin = 10;
+static constexpr int kMISOPin = 12;
+static constexpr int kMOSIPin = 11;
+static constexpr int kSCKPin = 13;
 
-    // PID parameters
-    static constexpr float kProportional = (float)(0.1745*(180.0/PI));
-    static constexpr float kIntegrator = 0.0f;
-    static constexpr float kDerivative = (float)(0.09*(180/PI));
+// PID parameters
+static constexpr float kProportional = (float)(0.1745 * (180.0 / PI));
+static constexpr float kIntegrator = 0.0f;
+static constexpr float kDerivative = (float)(0.09 * (180 / PI));
 
-    // PID output limits
-    static constexpr float kMaxControlAngle = 30.0f;  // Max canard deflection in degrees
-    static constexpr float kMinControlAngle = -30.0f;  // Min canard deflection in degrees
+// PID output limits
+static constexpr float kMaxControlAngle =
+    30.0f;  // Max canard deflection in degrees
+static constexpr float kMinControlAngle =
+    -30.0f;  // Min canard deflection in degrees
 
-    // PID effective input range
-    static constexpr float kPidMinAngle = -30.0f;
-    static constexpr float kPidMaxAngle = 30.0f;
+// PID effective input range
+static constexpr float kPidMinAngle = -30.0f;
+static constexpr float kPidMaxAngle = 30.0f;
 
-    // Servo mapping limits (for ControlHardware)
-    static constexpr float kServoMinAngle = 60.0f;  // Servo minimum command angle in degrees
-    static constexpr float kServoMaxAngle = 120.0f;  // Servo maximum command angle in degrees
-    static constexpr float kServoNeutralAngle = 90.0f;  // Servo neutral command angle
+// Servo mapping limits (for ControlHardware)
+static constexpr float kServoMinAngle =
+    60.0f;  // Servo minimum command angle in degrees
+static constexpr float kServoMaxAngle =
+    120.0f;  // Servo maximum command angle in degrees
+static constexpr float kServoNeutralAngle =
+    90.0f;  // Servo neutral command angle
 
-    // servo trimming parameters
-    static constexpr float kServoTrim1 = -10.0f;
-    static constexpr float kServoTrim2 = -10.0f;
-    static constexpr float kServoTrim3 = -10.0f;
-    static constexpr float kServoTrim4 = -10.0f;
+// servo trimming parameters
+static constexpr float kServoTrim1 = -10.0f;
+static constexpr float kServoTrim2 = -10.0f;
+static constexpr float kServoTrim3 = -10.0f;
+static constexpr float kServoTrim4 = -10.0f;
 
-    static const unsigned long CALIBRATION_DURATION_MS = 5000;
-}
+static const unsigned long CALIBRATION_DURATION_MS = 5000;
+}  // namespace constants
 
 /**
  * @struct FlightData
@@ -59,13 +67,13 @@ namespace constants {
  */
 struct FlightData {
     /** @brief [ms] System time since microcontroller boot. */
-    unsigned long timeMs;    
-    
+    unsigned long timeMs;
+
     /** @brief [m] Current altitude relative to ground level (barometric). */
-    float altitude;           
-    
+    float altitude;
+
     /** @brief [m/s] Vertical velocity component (positive values indicate ascent). */
-    float verticalVelocity;  
+    float verticalVelocity;
 
     /** @brief [m/s^2] Linear acceleration along the rocket's X-axis. */
     float accX;
@@ -74,8 +82,8 @@ struct FlightData {
     float accY;
 
     /** @brief [m/s^2] Linear acceleration along the rocket's Z-axis (gravity compensated). */
-    float accZ;            
-    
+    float accZ;
+
     /** @brief [rad/s] Angular velocity around the rocket's X-axis. */
     float rotX;
 
@@ -105,12 +113,14 @@ struct FlightData {
 
     /** @brief [rad] Magnetic heading relative to true north. */
     double heading;
-    
+
     /** @brief [m/s^2] Total magnitude of the acceleration vector (G-force). */
-    float accelMagnitude;    
-    
+    float accelMagnitude;
+
     /** @brief Hardware interlock state: True if the "Remove Before Flight" pin is pulled. */
     bool rbfRemoved;
+
+    void SerializeJson(char *outputBuffer, std::size_t outputBufferSize);
 };
 /**
  * @enum LogType
@@ -120,16 +130,16 @@ struct FlightData {
  */
 enum class LogType : uint8_t {
     /** @brief General system status or phase transition info (Level 0). */
-    kInfo = 0,     
-    
+    kInfo = 0,
+
     /** @brief Non-critical anomaly; system can still proceed (Level 1). */
-    kWarning = 1,  
-    
+    kWarning = 1,
+
     /** @brief Recoverable error; a specific function might be degraded (Level 2). */
-    kError = 2,    
-    
+    kError = 2,
+
     /** @brief System-critical failure; flight safety or data integrity is at risk (Level 3). */
-    kCritical = 3  
+    kCritical = 3
 };
 
 #endif  // FLIGHT_CODE_INCLUDE_CONSTANTS_H_

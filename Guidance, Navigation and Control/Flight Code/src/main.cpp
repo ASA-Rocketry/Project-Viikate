@@ -62,7 +62,10 @@ void loop() {
         0.0f,
         -data.oriZ
     );  // Example: control to maintain 90 degrees orientation around Z-axis
-    sendToSerial(Serial8, data, control);
+    char serializedFlightData[512] = "";
+    data.SerializeJson(serializedFlightData, sizeof(serializedFlightData));
+    Serial8.println(serializedFlightData);
+
     // Print values to Serial
     Serial.print("Altitude: ");
     Serial.println(data.altitude);
