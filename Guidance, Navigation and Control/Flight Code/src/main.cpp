@@ -28,7 +28,7 @@ void sendToSerial(Print &serial, FlightData data, Control control) {
     telem.altitude = data.altitude;
     telem.verticalVelocity = data.verticalVelocity;
     telem.accZ = data.accZ;
-    telem.rotZ = data.rotZ;
+    telem.rotZ = data.oriZ;
     telem.error = control.get_error();
     telem.timestamp = micros();
 
@@ -64,7 +64,7 @@ void loop() {
     );  // Example: control to maintain 90 degrees orientation around Z-axis
     char serializedFlightData[512] = "";
     data.SerializeJson(serializedFlightData, sizeof(serializedFlightData));
-    Serial8.println(serializedFlightData);
+    // Serial8.println(serializedFlightData);
 
     // Print values to Serial
     Serial.print("Altitude: ");
@@ -105,9 +105,6 @@ void loop() {
     Serial.println(data.magZ), Serial.print("Heading: ");
     Serial.println(data.heading);
     Serial.println("--------------------");
-
-    control.PID(90.0f, data.oriZ);  // Example: control to maintain 90 degrees
-    // orientation around Z-axis
 
     Serial.println("Control error:");
     error = control.get_error();

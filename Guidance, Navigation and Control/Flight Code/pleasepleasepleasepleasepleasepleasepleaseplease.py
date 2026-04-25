@@ -1,12 +1,11 @@
 import asyncio
 import struct
-from bleak import BleakClient
+from bleak import BleakClient, BleakScanner
 from datetime import datetime
 
 # --- Config ---
 DEVICE_ADDRESS = "00:15:83:00:6E:F7"  # replace with your HC-06 address
-CHAR_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb"  # replace if different
-
+CHAR_UUID = "B8CC4750-0C67-86C5-DF99-30F17A288FB8"  
 # --- Packet format ---
 PACKET_FORMAT = "<5fI"
 PACKET_SIZE   = struct.calcsize(PACKET_FORMAT)  # 24 bytes
@@ -55,10 +54,21 @@ def notification_handler(sender, raw):
             buffer = buffer[1:]
 
 async def main():
-    print(f"Connecting to {DEVICE_ADDRESS}...")
-    async with BleakClient(DEVICE_ADDRESS) as client:
-        print(f"Connected: {client.is_connected}")
-        await client.start_notify(CHAR_UUID, notification_handler)
+
+    devices = await BleakScanner.discover()
+    target = None
+    for device in devices:
+        print(f"{device.name} - {device.address}")
+        if device.name == "=flightcontroller":  # or whatever your device name is
+            target = device
+            break
+
+    print(type(target.address))
+
+    print(f"Connecting to {target.address}...")
+    async with BleakClient(target.address) as client:
+        print(f"Connected!")
+        await client.start_notify(str(target.address), notification_handler)
         print("Receiving data — press Ctrl+C to stop\n")
         while True:
             await asyncio.sleep(0.1)
