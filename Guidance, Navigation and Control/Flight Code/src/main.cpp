@@ -64,51 +64,86 @@ void loop() {
     );  // Example: control to maintain 90 degrees orientation around Z-axis
     char serializedFlightData[512] = "";
     data.SerializeJson(serializedFlightData, sizeof(serializedFlightData));
-    // Serial8.println(serializedFlightData);
+
+    size_t jsonLen =
+        strnlen(serializedFlightData, sizeof(serializedFlightData));
+
+    // Rust expects PACKET_MAGIC as little-endian bytes for:
+    // 0x68d7ede87b264e66b6091a22a3325b10
+    static const uint8_t magic[16] = {
+        0x10,
+        0x5b,
+        0x32,
+        0xa3,
+        0x22,
+        0x1a,
+        0x09,
+        0xb6,
+        0x66,
+        0x4e,
+        0x26,
+        0x7b,
+        0xe8,
+        0xed,
+        0xd7,
+        0x68
+    };
+
+    uint32_t len = (uint32_t)jsonLen;
+    uint8_t lenBytes[4] = {
+        (uint8_t)(len & 0xff),
+        (uint8_t)((len >> 8) & 0xff),
+        (uint8_t)((len >> 16) & 0xff),
+        (uint8_t)((len >> 24) & 0xff)
+    };
+
+    Serial.write(magic, sizeof(magic));
+    Serial.write(lenBytes, sizeof(lenBytes));
+    Serial.write((const uint8_t *)serializedFlightData, jsonLen);
 
     // Print values to Serial
-    Serial.print("Altitude: ");
-    Serial.println(data.altitude);
-    Serial.print("Vertical Velocity: ");
-    Serial.println(data.verticalVelocity);
-    Serial.print("AccelZ: ");
-    Serial.println(data.accZ);
-    Serial.print("RotZ: ");
-    Serial.println(data.rotZ);
-    Serial.print("AccelMagnitude: ");
-    Serial.println(data.accelMagnitude);
-    Serial.print("RBF Removed: ");
-    Serial.println(data.rbfRemoved);
-    Serial.print("Acc (x, y, z): ");
-    Serial.print(data.accX);
-    Serial.print(", ");
-    Serial.print(data.accY);
-    Serial.print(", ");
-    Serial.println(data.accZ);
-    Serial.print("Gyro Angular Rate (x, y, z): ");
-    Serial.print(data.rotX);
-    Serial.print(", ");
-    Serial.print(data.rotY);
-    Serial.print(", ");
-    Serial.println(data.rotZ);
-    Serial.print("Orientation (x, y, z): ");
-    Serial.print(data.oriX);
-    Serial.print(", ");
-    Serial.print(data.oriY);
-    Serial.print(", ");
-    Serial.println(data.oriZ);
-    Serial.print("Mag: ");
-    Serial.print(data.magX);
-    Serial.print(", ");
-    Serial.print(data.magY);
-    Serial.print(", ");
-    Serial.println(data.magZ), Serial.print("Heading: ");
-    Serial.println(data.heading);
-    Serial.println("--------------------");
+    //Serial.print("Altitude: ");
+    //Serial.println(data.altitude);
+    //Serial.print("Vertical Velocity: ");
+    //Serial.println(data.verticalVelocity);
+    //Serial.print("AccelZ: ");
+    //Serial.println(data.accZ);
+    //Serial.print("RotZ: ");
+    //Serial.println(data.rotZ);
+    //Serial.print("AccelMagnitude: ");
+    //Serial.println(data.accelMagnitude);
+    //Serial.print("RBF Removed: ");
+    //Serial.println(data.rbfRemoved);
+    //Serial.print("Acc (x, y, z): ");
+    //Serial.print(data.accX);
+    //Serial.print(", ");
+    //Serial.print(data.accY);
+    //Serial.print(", ");
+    //Serial.println(data.accZ);
+    //Serial.print("Gyro Angular Rate (x, y, z): ");
+    //Serial.print(data.rotX);
+    //Serial.print(", ");
+    //Serial.print(data.rotY);
+    //Serial.print(", ");
+    //Serial.println(data.rotZ);
+    //Serial.print("Orientation (x, y, z): ");
+    //Serial.print(data.oriX);
+    //Serial.print(", ");
+    //Serial.print(data.oriY);
+    //Serial.print(", ");
+    //Serial.println(data.oriZ);
+    //Serial.print("Mag: ");
+    //Serial.print(data.magX);
+    //Serial.print(", ");
+    //Serial.print(data.magY);
+    //Serial.print(", ");
+    //Serial.println(data.magZ), Serial.print("Heading: ");
+    //Serial.println(data.heading);
+    //Serial.println("--------------------");
 
-    Serial.println("Control error:");
-    error = control.get_error();
-    Serial.println(error);
+    //Serial.println("Control error:");
+    //error = control.get_error();
+    //Serial.println(error);
     if (abs(error) < 5.0f) {  // Example threshold for critical error
         digitalWrite(
             constants::kLEDPin,
@@ -119,5 +154,5 @@ void loop() {
         delay(50);
     }
 
-    sendToSerial(Serial8, data, control);
+    //sendToSerial(Serial8, data, control);
 }

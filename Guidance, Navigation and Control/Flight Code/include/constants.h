@@ -27,9 +27,9 @@ static constexpr int kMOSIPin = 11;
 static constexpr int kSCKPin = 13;
 
 // PID parameters
-static constexpr float kProportional = (float)(0.1745 * (180.0 / PI));
-static constexpr float kIntegrator = 0.0f;
-static constexpr float kDerivative = (float)(0.09 * (180 / PI));
+static float kProportional = (float)(0.1745 * (180.0 / PI));
+static float kIntegrator = 0.0f;
+static float kDerivative = (float)(0.09 * (180 / PI));
 
 // PID output limits
 static constexpr float kMaxControlAngle =
@@ -50,10 +50,10 @@ static constexpr float kServoNeutralAngle =
     90.0f;  // Servo neutral command angle
 
 // servo trimming parameters
-static constexpr float kServoTrim1 = -10.0f;
-static constexpr float kServoTrim2 = -10.0f;
-static constexpr float kServoTrim3 = -10.0f;
-static constexpr float kServoTrim4 = -10.0f;
+static float kServoTrim1 = -10.0f;
+static float kServoTrim2 = -10.0f;
+static float kServoTrim3 = -10.0f;
+static float kServoTrim4 = -10.0f;
 
 static const unsigned long CALIBRATION_DURATION_MS = 5000;
 }  // namespace constants

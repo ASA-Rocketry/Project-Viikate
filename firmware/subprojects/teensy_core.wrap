@@ -1,5 +1,0 @@
-[wrap-git]
-url = https://github.com/PaulStoffregen/cores/
-revision = 7659e4122861b29888341ad6628f7e16c3a08b65
-depth = 1
-patch_directory = teensy_core

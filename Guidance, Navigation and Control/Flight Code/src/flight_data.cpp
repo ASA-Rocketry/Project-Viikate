@@ -9,7 +9,7 @@ void FlightData::SerializeJson(
     std::size_t outputBufferSize
 ) {
     JsonDocument doc;
-    doc["timestamp"] = this->timeMs;
+    doc["timeMs"] = this->timeMs;
     doc["altitude"] = this->altitude;
     doc["verticalVelocity"] = this->verticalVelocity;
     doc["accX"] = this->accX;
