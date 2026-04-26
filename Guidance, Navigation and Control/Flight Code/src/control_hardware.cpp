@@ -49,7 +49,7 @@ void ControlHardware::initialisationAnimation() {
 void ControlHardware::SetCanardAngle(float pid_angle_degrees) {
     // Clamp PID output to valid operating range from constants
     float clamped_pid = constrain(
-        pid_angle_degrees,
+        -pid_angle_degrees,
         constants::kPidMinAngle,
         constants::kPidMaxAngle
     );
