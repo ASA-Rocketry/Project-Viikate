@@ -3,6 +3,7 @@
 #include "control.h"
 #include "control_hardware.h"
 #include "data_logger.h"
+#include "remote_config.h"
 #include "sensors.h"
 #include "state_machine.h"
 
@@ -35,6 +36,8 @@ void sendToSerial(Print &serial, FlightData data, Control control) {
     serial.write((uint8_t *)&telem, sizeof(telem));
 }
 
+#define RESET_BUTTON 30
+
 void setup() {
     Serial.begin(9600);
     Serial8.begin(9600);
@@ -47,6 +50,16 @@ void setup() {
     data_logger.LogEvent(LogType::kInfo, "SETUP COMPLETE");
 
     pinMode(constants::kLEDPin, OUTPUT);  // Set LED pin as output
+    //
+    pinMode(RESET_BUTTON, INPUT_PULLUP);
+}
+
+void softwareReset() {
+    // Trigger a system reset using the ARM System Control Block
+    SCB_AIRCR = 0x05FA0004;
+    while (1) {
+        // wait for reset to occur
+    }
 }
 
 /**
@@ -55,11 +68,18 @@ void setup() {
  * Reads sensor data, logs flight telemetry, and performs control.
  */
 void loop() {
+    if (digitalRead(RESET_BUTTON) == LOW) {
+        delay(20);  // debounce
+        if (digitalRead(RESET_BUTTON) == LOW) {
+            softwareReset();
+        }
+    }
+
     FlightData data = sensors.ReadFlightData();
     data_logger.LogFlightData(data);
 
     control.PID(
-        0.0f,
+        90.0f,
         -data.oriZ
     );  // Example: control to maintain 90 degrees orientation around Z-axis
     char serializedFlightData[512] = "";
@@ -100,6 +120,8 @@ void loop() {
     Serial.write(magic, sizeof(magic));
     Serial.write(lenBytes, sizeof(lenBytes));
     Serial.write((const uint8_t *)serializedFlightData, jsonLen);
+
+    readAndApplyPacket(Serial);
 
     // Print values to Serial
     //Serial.print("Altitude: ");

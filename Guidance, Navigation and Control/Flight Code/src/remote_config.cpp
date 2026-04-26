@@ -103,25 +103,25 @@ static bool findMagicLE(Stream &s, uint32_t timeoutMs) {
 // Apply JSON keys if present. Keys are optional and update on presence.
 static void applyJsonToGlobals(const JsonVariantConst &root) {
     if (root.containsKey("kProportional")) {
-        kProportional = root["kProportional"].as<float>();
+        constants::kProportional = root["kProportional"].as<float>();
     }
     if (root.containsKey("kIntegrator")) {
-        kIntegrator = root["kIntegrator"].as<float>();
+        constants::kIntegrator = root["kIntegrator"].as<float>();
     }
     if (root.containsKey("kDerivative")) {
-        kDerivative = root["kDerivative"].as<float>();
+        constants::kDerivative = root["kDerivative"].as<float>();
     }
     if (root.containsKey("kServoTrim1")) {
-        kServoTrim1 = root["kServoTrim1"].as<float>();
+        constants::kServoTrim1 = root["kServoTrim1"].as<float>();
     }
     if (root.containsKey("kServoTrim2")) {
-        kServoTrim2 = root["kServoTrim2"].as<float>();
+        constants::kServoTrim2 = root["kServoTrim2"].as<float>();
     }
     if (root.containsKey("kServoTrim3")) {
-        kServoTrim3 = root["kServoTrim3"].as<float>();
+        constants::kServoTrim3 = root["kServoTrim3"].as<float>();
     }
     if (root.containsKey("kServoTrim4")) {
-        kServoTrim4 = root["kServoTrim4"].as<float>();
+        constants::kServoTrim4 = root["kServoTrim4"].as<float>();
     }
 }
 

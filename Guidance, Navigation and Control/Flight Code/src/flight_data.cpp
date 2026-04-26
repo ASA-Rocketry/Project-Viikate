@@ -27,5 +27,14 @@ void FlightData::SerializeJson(
     doc["heading"] = this->heading;
     doc["accelMagnitude"] = this->accelMagnitude;
     doc["rbfRemoved"] = this->rbfRemoved;
+
+    doc["kProportional"] = constants::kProportional;
+    doc["kIntegrator"] = constants::kIntegrator;
+    doc["kDerivative"] = constants::kDerivative;
+    doc["kServoTrim1"] = constants::kServoTrim1;
+    doc["kServoTrim2"] = constants::kServoTrim2;
+    doc["kServoTrim3"] = constants::kServoTrim3;
+    doc["kServoTrim4"] = constants::kServoTrim4;
+
     serializeJson(doc, outputBuffer, outputBufferSize);
 }

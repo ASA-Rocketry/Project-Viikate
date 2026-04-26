@@ -59,6 +59,14 @@ pub struct FlightData {
     pub heading: f64,
     pub accel_magnitude: f32,
     pub rbf_removed: bool,
+
+    pub k_proportional: f32,
+    pub k_integrator: f32,
+    pub k_derivative: f32,
+    pub k_servo_trim1: f32,
+    pub k_servo_trim2: f32,
+    pub k_servo_trim3: f32,
+    pub k_servo_trim4: f32,
 }
 
 #[derive(Resource, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -365,7 +373,7 @@ struct RocketVisualRoot;
 
 fn main() {
     let sp = SerialPortRes(Mutex::new(
-        serialport::new("/dev/tty1", 115200)
+        serialport::new("/dev/ttyACM0", 115200)
             .timeout(Duration::from_millis(10))
             .open()
             .unwrap(),
@@ -584,8 +592,8 @@ fn world_rotation(data: &FlightData) -> Quat {
     Quat::from_euler(
         EulerRot::XYZ,
         orientation_value(data.ori_x),
-        orientation_value(data.ori_y),
         orientation_value(data.ori_z),
+        orientation_value(data.ori_y),
     )
 }
 
@@ -836,6 +844,9 @@ fn ui_system(
             ui.label(
                 "Note: trail is vertical because telemetry currently has altitude but not x/z position.",
             );
+
+
+            ui.label(format!("{:#?}", latest.0));
 
             ui.separator();
 

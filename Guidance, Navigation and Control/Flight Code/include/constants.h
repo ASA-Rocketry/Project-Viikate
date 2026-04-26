@@ -27,9 +27,9 @@ static constexpr int kMOSIPin = 11;
 static constexpr int kSCKPin = 13;
 
 // PID parameters
-static float kProportional = (float)(0.1745 * (180.0 / PI));
+static float kProportional = (float)(0.01 * (180.0 / PI));
 static float kIntegrator = 0.0f;
-static float kDerivative = (float)(0.09 * (180 / PI));
+static float kDerivative = (float)(10.0 * (180 / PI));
 
 // PID output limits
 static constexpr float kMaxControlAngle =
