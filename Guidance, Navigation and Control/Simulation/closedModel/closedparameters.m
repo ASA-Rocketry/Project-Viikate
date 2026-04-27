@@ -30,9 +30,9 @@ rho = 1.225; % air density kg/m^3
 % fin_angles = [a1 a2 a3 a4]';
 
 %Cl = 0.191; %average fin lift coefficient at 5 deg AoA
-Af = 0.003689; % fin area
+Af = 0.0016875; %0.003689; % fin area
 %Fl = 1/2*Cl*A*Vb^2
-lr = 34.15; % center of lift from root of fin
+lr = 34.15*0.65; %34.15; % center of lift from root of fin
 fr = (75/2 + lr)/1000; % Fin moment arm (m)
 
 %Cg = 0.625;
@@ -45,11 +45,11 @@ r_cp = [Cp 0 0]';
 N = [0 -1 0; 0 0 -1; 0 1 0; 0 0 1]; % Canard Lift directions
 si = [0 0 1; 0 -1 0; 0 0 -1; 0 1 0]; % Canard span directions 
 
-Cla = 2; %1.975;
+Cla = 0.633; %1.975*0.4; %1.975;
 CNa = 20; % Normal force coefficient slope
 Cmq = -40; % Pitch damping moment coefficient slope
 Cnr = -40; %yaw damping moment slope
-Clp = -0.5; % roll damping moment slope
+Clp = -0.3; % roll damping moment slope
 L = 1.15; % Length of the rocket
 b = 0.14;
 
@@ -66,12 +66,12 @@ Dgain = 0.2;
 Igain = 0;
 
 % Roll orientation PID gains
-Pgainphi = deg2rad(10)/ref_phi;
-Dgainphi = 0.01;
+Pgainphi = deg2rad(0.05);
+Dgainphi = 0.015;
 Igainphi = 0;
 
 tau = 0.05; % actuatuor time constant for fin servos
-alim = deg2rad(800); % servo rate limiter
+alim = deg2rad(600); % servo rate limiter
 
 Vsafe = 0.1; %
 
