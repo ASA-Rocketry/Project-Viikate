@@ -43,6 +43,10 @@ void Control::PID(float set_angle_deg, float current_angle_deg) {
     float Ki = constants::kIntegrator;
     float Kd = constants::kDerivative;
 
+    if (set_angle_deg != previous_set_angle_){
+        previous_error_ = 0.0f; 
+    }
+
     // Calculate angular error
     float angular_error = set_angle_deg - current_angle_deg;
 
@@ -109,6 +113,7 @@ void Control::PID(float set_angle_deg, float current_angle_deg) {
     // Update state for next iteration.
     previous_error_ = angular_error;
     previous_time_ms_ = current_time_ms;
+    previous_set_angle_ = set_angle_deg;
 
     // Command servos: maps [-30,30]° to [60,120]° servo range inside of the ControlHardware class
     control_hardware_.SetCanardAngle(saturated_output);

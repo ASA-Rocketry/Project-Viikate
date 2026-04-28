@@ -18,7 +18,7 @@ float error;
 unsigned long lastSwitchTime = 0;
 const unsigned long interval = 10000; 
 
-std::vector<float> setpoints = {0.0f, 90.0f};
+std::vector<float> setpoints = {-90.0f, 90.0f};
 int setpoint_index = 0;
 
 struct TelemetryData {
@@ -63,30 +63,37 @@ void setup() {
  */
 void loop() {
     FlightData data = sensors.ReadFlightData();
-    data_logger.LogFlightData(data);
+    //data_logger.LogFlightData(data);
 
     unsigned long currentTime = millis();
 
-    /*if (currentTime - lastSwitchTime >= interval) {
+    if (currentTime - lastSwitchTime >= interval) {
         lastSwitchTime = currentTime;
 
         // Run PID with current setpoint
-        control.PID(
-            setpoints[setpoint_index],
-            data.oriZ
-        );
+        //control.PID(
+        //    setpoints[setpoint_index],
+        //    data.oriZ
+        //);
 
         // Move to next setpoint
         setpoint_index = (setpoint_index + 1) % setpoints.size();
-    }*/
-    // char serializedFlightData[512] = "";
-    // data.SerializeJson(serializedFlightData, sizeof(serializedFlightData));
-    // Serial8.println(serializedFlightData);
+    }
+     //char serializedFlightData[512] = "";
+     //data.SerializeJson(serializedFlightData, sizeof(serializedFlightData));
+     //Serial8.println(serializedFlightData);
 
+
+    control.PID(
+            setpoints[setpoint_index],
+            data.oriZ
+        );
+    /*
     control.PID(
         90.0f,
         data.oriZ
     );
+    */
 
     // Print values to Serial
     Serial.print("Altitude: ");

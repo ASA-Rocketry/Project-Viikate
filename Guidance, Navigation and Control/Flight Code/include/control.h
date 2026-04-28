@@ -22,6 +22,7 @@ class Control {
   float previous_error_;      // Previous angular error for derivative calculation
   float integral_error_;      // Accumulated error for integral term
   unsigned long previous_time_ms_;  // Timestamp of previous PID iteration
+  float previous_set_angle_;
 
   // Hardware interface
   ControlHardware control_hardware_;  // Servo control abstraction
