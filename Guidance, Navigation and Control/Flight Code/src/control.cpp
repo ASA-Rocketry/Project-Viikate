@@ -43,8 +43,9 @@ void Control::PID(float set_angle_deg, float current_angle_deg) {
     float Ki = constants::kIntegrator;
     float Kd = constants::kDerivative;
 
-    if (set_angle_deg != previous_set_angle_){
-        previous_error_ = 0.0f; 
+    if (set_angle_deg != previous_set_angle_){ // When the target changes the errors are set to 0
+        previous_error_ = 0.0f;
+        integral_error_ = 0.0f;  
     }
 
     // Calculate angular error

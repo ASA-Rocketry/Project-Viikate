@@ -63,18 +63,12 @@ void setup() {
  */
 void loop() {
     FlightData data = sensors.ReadFlightData();
-    //data_logger.LogFlightData(data);
+    data_logger.LogFlightData(data);
 
     unsigned long currentTime = millis();
 
     if (currentTime - lastSwitchTime >= interval) {
         lastSwitchTime = currentTime;
-
-        // Run PID with current setpoint
-        //control.PID(
-        //    setpoints[setpoint_index],
-        //    data.oriZ
-        //);
 
         // Move to next setpoint
         setpoint_index = (setpoint_index + 1) % setpoints.size();
@@ -83,17 +77,10 @@ void loop() {
      //data.SerializeJson(serializedFlightData, sizeof(serializedFlightData));
      //Serial8.println(serializedFlightData);
 
-
     control.PID(
-            setpoints[setpoint_index],
-            data.oriZ
-        );
-    /*
-    control.PID(
-        90.0f,
+        setpoints[setpoint_index],
         data.oriZ
     );
-    */
 
     // Print values to Serial
     Serial.print("Altitude: ");

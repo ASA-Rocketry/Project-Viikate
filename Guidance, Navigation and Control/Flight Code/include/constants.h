@@ -28,8 +28,13 @@ static constexpr int kSCKPin = 13;
 
 // PID parameters
 static float kProportional = 0.1745f;
-static float kIntegrator = 0.0f;
+static float kIntegrator = 0.1f; // 0.03
 static float kDerivative = 0.06f;  // as per wind tunnel tests
+
+// Taneli the magician values:
+//static float kProportional = 0.1745f;
+//static float kIntegrator = 0.0f;
+//static float kDerivative = 0.06f;  // as per wind tunnel tests
 
 // PID output limits
 static constexpr float kMaxControlAngle =
