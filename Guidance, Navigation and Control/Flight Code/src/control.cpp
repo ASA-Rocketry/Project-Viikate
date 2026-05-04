@@ -38,10 +38,10 @@ bool Control::Initialize() {
  * @param current_angle Current angle in degrees.
  */
 void Control::PID(float set_angle_deg, float current_angle_deg) {
-    // PID parameters from constants.h
-    float Kp = constants::kProportional;
-    float Ki = constants::kIntegrator;
-    float Kd = constants::kDerivative;
+    // Z-axis PID parameters from constants.h
+    float Kp = constants::kZProportional;
+    float Ki = constants::kZIntegrator;
+    float Kd = constants::kZDerivative;
 
     if (set_angle_deg != previous_set_angle_){ // When the target changes the errors are set to 0
         previous_error_ = 0.0f;

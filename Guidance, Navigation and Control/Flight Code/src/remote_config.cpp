@@ -102,14 +102,14 @@ static bool findMagicLE(Stream &s, uint32_t timeoutMs) {
 
 // Apply JSON keys if present. Keys are optional and update on presence.
 static void applyJsonToGlobals(const JsonVariantConst &root) {
-    if (root.containsKey("kProportional")) {
-        constants::kProportional = root["kProportional"].as<float>();
+    if (root.containsKey("kZProportional")) {
+        constants::kZProportional = root["kZProportional"].as<float>();
     }
-    if (root.containsKey("kIntegrator")) {
-        constants::kIntegrator = root["kIntegrator"].as<float>();
+    if (root.containsKey("kZIntegrator")) {
+        constants::kZIntegrator = root["kZIntegrator"].as<float>();
     }
-    if (root.containsKey("kDerivative")) {
-        constants::kDerivative = root["kDerivative"].as<float>();
+    if (root.containsKey("kZDerivative")) {
+        constants::kZDerivative = root["kZDerivative"].as<float>();
     }
     if (root.containsKey("kServoTrim1")) {
         constants::kServoTrim1 = root["kServoTrim1"].as<float>();
