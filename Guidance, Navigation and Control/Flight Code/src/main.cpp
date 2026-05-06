@@ -15,8 +15,10 @@
 #include "control.h"
 #include "control_hardware.h"
 #include "data_logger.h"
+#include "flight_data.h"
 #include "sensors.h"
 #include "state_machine.h"
+
 #include <vector>
 
 // Global subsystem instances used throughout the flight control loop.
@@ -67,6 +69,7 @@ void sendToSerial(Print &serial, FlightData data, Control control) {
 }
 
 void setup() {
+#ifdef PRODUCTION_MODE
     // Initialize the two serial ports used for debugging and telemetry.
     Serial.begin(9600);
     Serial8.begin(9600);
@@ -79,6 +82,16 @@ void setup() {
     data_logger.LogEvent(LogType::kInfo, "SETUP COMPLETE");
 
     pinMode(constants::kLEDPin, OUTPUT);
+#elif TEST_MODE
+    // Initialize the two serial ports used for debugging and telemetry.
+    Serial.begin(9600);
+    Serial8.begin(9600);
+    readSimulatedData();
+    Serial.write("Test mode setup complete.\n");
+
+#else
+    return;
+#endif
 }
 
 /**
@@ -89,6 +102,7 @@ void setup() {
  * out telemetry over both serial outputs.
  */
 void loop() {
+#ifdef PRODUCTION_MODE
     // Acquire the latest sensor and attitude measurements.
     FlightData data = sensors.ReadFlightData();
     data_logger.LogFlightData(data);
@@ -168,4 +182,12 @@ void loop() {
 
     // Send the compact telemetry packet to the secondary serial port.
     sendToSerial(Serial8, data, control);
+#elif TEST_MODE
+    FlightData data = getSimulatedFlightData();
+    data.rbfRemoved = true;
+    state_machine.Update(data);
+    data_logger.LogFlightData(data);
+#else
+    return;
+#endif
 }

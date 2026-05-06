@@ -1,8 +1,11 @@
 #include <ArduinoJson.h>
 
 #include <cstddef>
+#include <vector>
 
 #include "constants.h"
+
+#include <SD.h>
 
 void FlightData::SerializeJson(
     char *outputBuffer,
@@ -37,4 +40,87 @@ void FlightData::SerializeJson(
     doc["kServoTrim4"] = constants::kServoTrim4;
 
     serializeJson(doc, outputBuffer, outputBufferSize);
+}
+
+static bool parseFlightDataCsvLine(const String &line, FlightData &output) {
+    String trimmed = line;
+    trimmed.trim();
+
+    if (trimmed.length() == 0 || trimmed.startsWith("#")) {
+        return false;
+    }
+
+    float values[5] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+    int start = 0;
+
+    for (int i = 0; i < 5; ++i) {
+        int commaIndex = trimmed.indexOf(',', start);
+        String token;
+
+        if (commaIndex == -1) {
+            if (i == 4) {
+                token = trimmed.substring(start);
+            } else {
+                return false;
+            }
+        } else {
+            token = trimmed.substring(start, commaIndex);
+            start = commaIndex + 1;
+        }
+
+        token.trim();
+        values[i] = token.toFloat();
+    }
+
+    output.timeMs = static_cast<unsigned long>(values[0] * 1000.0f + 0.5f);
+    output.altitude = values[1];
+    output.verticalVelocity = values[2];
+    output.accZ = values[3];
+    output.accelMagnitude = values[4];
+
+    output.accX = 0.0f;
+    output.accY = 0.0f;
+    output.rotX = 0.0f;
+    output.rotY = 0.0f;
+    output.rotZ = 0.0f;
+    output.oriX = 0.0f;
+    output.oriY = 0.0f;
+    output.oriZ = 0.0f;
+    output.magX = 0.0;
+    output.magY = 0.0;
+    output.magZ = 0.0;
+    output.heading = 0.0;
+    output.rbfRemoved = false;
+
+    return true;
+}
+
+static std::vector<FlightData> simulatedData;
+void readSimulatedData() {
+    // Implementation for reading simulated data
+    pinMode(constants::kCsPin, OUTPUT);
+    SD.begin(constants::kCsPin);
+    File file = SD.open("simulated_flight_data_1.csv");
+
+    if (file) {
+        while (file.available()) {
+            String line = file.readStringUntil('\n');
+            FlightData data;
+            if (parseFlightDataCsvLine(line, data)) {
+                simulatedData.push_back(data);
+            }
+        }
+        file.close();
+    }
+}
+
+// This goes to the main loop when we're running in simulation mode. 
+//It returns the next data point from the simulated data set on each call, allowing the rest of the system to
+FlightData getSimulatedFlightData() {
+    static size_t index = 0;
+    if (index < simulatedData.size()) {
+        return simulatedData[index++];
+    } else {
+        return FlightData();  // Return default data if we've exhausted the simulated data
+    }
 }

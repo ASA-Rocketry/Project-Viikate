@@ -1,5 +1,19 @@
 #include "state_machine.h"
 #include "constants.h"
+#include <Arduino.h>
+
+static const char* StateToString(State state) {
+    switch (state) {
+        case State::kIdle: return "kIdle";
+        case State::kLaunchpad: return "kLaunchpad";
+        case State::kLiftoff: return "kLiftoff";
+        case State::kCoast: return "kCoast";
+        case State::kApogee: return "kApogee";
+        case State::kRDD: return "kRDD";
+        case State::kGround: return "kGround";
+        default: return "Unknown";
+    }
+}
 
 StateMachine::StateMachine(DataLogger& data_logger): data_logger_(data_logger){
     active_state = State::kIdle;
@@ -92,8 +106,14 @@ State StateMachine::Update(const FlightData& data){
         }
 
         if (next_state != active_state) {
-        OnEnter(next_state, data.timeMs);
-        active_state = next_state;
+#ifdef TEST_MODE
+            Serial.print("Exiting state: ");
+            Serial.println(StateToString(active_state));
+            Serial.print("Entering state: ");
+            Serial.println(StateToString(next_state));
+#endif
+            OnEnter(next_state, data.timeMs);
+            active_state = next_state;
     }
     return active_state;
 }
