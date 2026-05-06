@@ -85,8 +85,10 @@ void setup() {
 #elif TEST_MODE
     // Initialize the primary debug serial port.
     Serial.begin(9600);
+    delay(1000);  // Give serial time to initialize
+    Serial.println("\n\n=== TEST MODE STARTING ===");
     readSimulatedData();
-    Serial.println("Test mode setup complete.");
+    Serial.println("=== READY ===\n");
 
 #else
     return;
@@ -183,6 +185,20 @@ void loop() {
     sendToSerial(Serial8, data, control);
 #elif TEST_MODE
     FlightData data = getSimulatedFlightData();
+    
+    Serial.print("Data point: ");
+    Serial.print(data.timeMs / 1000.0f);
+    Serial.print(" s, Alt: ");
+    Serial.print(data.altitude);
+    Serial.print(" m, Vel: ");
+    Serial.print(data.verticalVelocity);
+    Serial.print(" m/s, Acc: ");
+    Serial.print(data.accZ);
+    Serial.println(" m/s²");
+    
+    delay(100);  // Slow down output for readability
+
+    /*
     state_machine.Update(data);
 
     Serial.print("Current state: ");
@@ -200,8 +216,7 @@ void loop() {
     Serial.print("RBF Removed: ");
     Serial.println(data.rbfRemoved);
     Serial.println("--------------------");
-
-    data_logger.LogFlightData(data);
+    */
 #else
     return;
 #endif

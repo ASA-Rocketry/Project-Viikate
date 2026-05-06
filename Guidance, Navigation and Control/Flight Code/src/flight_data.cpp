@@ -99,19 +99,26 @@ static std::vector<FlightData> simulatedData;
 void readSimulatedData() {
     // Implementation for reading simulated data
     pinMode(constants::kCsPin, OUTPUT);
-    SD.begin(constants::kCsPin);
+    if (!SD.begin(constants::kCsPin)) {
+        Serial.println("SD card initialization failed!");
+        return;
+    }
     File file = SD.open("simulated_flight_data_1.csv");
 
-    if (file) {
-        while (file.available()) {
-            String line = file.readStringUntil('\n');
-            FlightData data;
-            if (parseFlightDataCsvLine(line, data)) {
-                simulatedData.push_back(data);
-            }
-        }
-        file.close();
+    if (!file) {
+        Serial.println("Failed to open CSV file: simulated_flight_data_1.csv");
+        return;
     }
+
+    while (file.available()) {
+        String line = file.readStringUntil('\n');
+        FlightData data;
+        if (parseFlightDataCsvLine(line, data)) {
+            simulatedData.push_back(data);
+        }
+    }
+    file.close();
+    Serial.println("Loaded " + String(simulatedData.size()) + " data points from CSV");
 }
 
 // This goes to the main loop when we're running in simulation mode. 
