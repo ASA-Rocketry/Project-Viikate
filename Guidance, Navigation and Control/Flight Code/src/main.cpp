@@ -83,11 +83,10 @@ void setup() {
 
     pinMode(constants::kLEDPin, OUTPUT);
 #elif TEST_MODE
-    // Initialize the two serial ports used for debugging and telemetry.
+    // Initialize the primary debug serial port.
     Serial.begin(9600);
-    Serial8.begin(9600);
     readSimulatedData();
-    Serial.write("Test mode setup complete.\n");
+    Serial.println("Test mode setup complete.");
 
 #else
     return;
@@ -184,8 +183,24 @@ void loop() {
     sendToSerial(Serial8, data, control);
 #elif TEST_MODE
     FlightData data = getSimulatedFlightData();
-    data.rbfRemoved = true;
     state_machine.Update(data);
+
+    Serial.print("Current state: ");
+    Serial.println(StateToString(state_machine.GetState()));
+    Serial.print("Time (s): ");
+    Serial.println(data.timeMs / 1000.0f);
+    Serial.print("Altitude (m): ");
+    Serial.println(data.altitude);
+    Serial.print("Vertical velocity (m/s): ");
+    Serial.println(data.verticalVelocity);
+    Serial.print("Vertical acceleration (m/s²): ");
+    Serial.println(data.accZ);
+    Serial.print("Total acceleration (m/s²): ");
+    Serial.println(data.accelMagnitude);
+    Serial.print("RBF Removed: ");
+    Serial.println(data.rbfRemoved);
+    Serial.println("--------------------");
+
     data_logger.LogFlightData(data);
 #else
     return;

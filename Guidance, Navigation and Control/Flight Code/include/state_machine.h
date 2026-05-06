@@ -22,6 +22,13 @@ enum class State {
 };
 
 /**
+ * @brief Convert a State enum to a string representation.
+ * @param state The state to convert.
+ * @return const char* String representation of the state.
+ */
+const char* StateToString(State state);
+
+/**
  * @brief Rocket flight state machine.
  *
  * Responsible ONLY for determining the current flight state

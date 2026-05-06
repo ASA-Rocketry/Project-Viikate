@@ -2,7 +2,7 @@
 #include "constants.h"
 #include <Arduino.h>
 
-static const char* StateToString(State state) {
+const char* StateToString(State state) {
     switch (state) {
         case State::kIdle: return "kIdle";
         case State::kLaunchpad: return "kLaunchpad";

@@ -115,12 +115,15 @@ void readSimulatedData() {
 }
 
 // This goes to the main loop when we're running in simulation mode. 
-//It returns the next data point from the simulated data set on each call, allowing the rest of the system to
+// It returns the next data point from the simulated data set on each call.
 FlightData getSimulatedFlightData() {
     static size_t index = 0;
+
     if (index < simulatedData.size()) {
-        return simulatedData[index++];
+        FlightData data = simulatedData[index++];
+        data.rbfRemoved = true; // Simulated launch prep: allow the state machine to transition.
+        return data;
     } else {
-        return FlightData();  // Return default data if we've exhausted the simulated data
+        return simulatedData.empty() ? FlightData() : simulatedData.back();
     }
 }
