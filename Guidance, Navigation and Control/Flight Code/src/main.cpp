@@ -69,7 +69,19 @@ void sendToSerial(Print &serial, FlightData data, Control control) {
 }
 
 void setup() {
-#ifdef PRODUCTION_MODE
+#ifdef PRODUCTION_FLIGHT_MODE
+    // Initialize the two serial ports used for debugging and telemetry.
+    Serial.begin(9600);
+    Serial8.begin(9600);
+
+    // Initialize core subsystems in a safe order.
+    // Data logger first so that any failures during sensors/control init can be recorded.
+    data_logger.Initialize();
+    sensors.Initialize();
+    control.Initialize();
+    data_logger.LogEvent(LogType::kInfo, "SETUP COMPLETE");
+
+#elif DTEST_PID_AND_CALIBRATION_MODE
     // Initialize the two serial ports used for debugging and telemetry.
     Serial.begin(9600);
     Serial8.begin(9600);
@@ -82,11 +94,12 @@ void setup() {
     data_logger.LogEvent(LogType::kInfo, "SETUP COMPLETE");
 
     pinMode(constants::kLEDPin, OUTPUT);
-#elif TEST_MODE
+
+#elif TEST_STATE_MACHINE_MODE
     // Initialize the primary debug serial port.
     Serial.begin(9600);
     delay(1000);  // Give serial time to initialize
-    Serial.println("\n\n=== TEST MODE STARTING ===");
+    Serial.println("\n\n=== TEST STATE MACHINE MODE STARTING ===");
     readSimulatedData();
     Serial.println("=== READY ===\n");
 
@@ -103,7 +116,8 @@ void setup() {
  * out telemetry over both serial outputs.
  */
 void loop() {
-#ifdef PRODUCTION_MODE
+#ifdef PRODUCTION_FLIGHT_MODE
+#elif DTEST_PID_AND_CALIBRATION_MODE
     // Acquire the latest sensor and attitude measurements.
     FlightData data = sensors.ReadFlightData();
     data_logger.LogFlightData(data);
@@ -183,9 +197,10 @@ void loop() {
 
     // Send the compact telemetry packet to the secondary serial port.
     sendToSerial(Serial8, data, control);
-#elif TEST_MODE
+#elif TEST_STATE_MACHINE_MODE
     FlightData data = getSimulatedFlightData();
     
+    /*
     Serial.print("Data point: ");
     Serial.print(data.timeMs / 1000.0f);
     Serial.print(" s, Alt: ");
@@ -195,7 +210,7 @@ void loop() {
     Serial.print(" m/s, Acc: ");
     Serial.print(data.accZ);
     Serial.println(" m/s²");
-    
+    */
     delay(100);  // Slow down output for readability
 
     /*
