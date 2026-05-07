@@ -21,7 +21,7 @@ static constexpr int kUARTRxPin = 34;
 static constexpr int kLEDPin = 24;
 
 static constexpr int kRbfPin = 2;
-static constexpr int kCsPin = 10;
+static constexpr int kImuCsPin = 10;
 static constexpr int kMISOPin = 12;
 static constexpr int kMOSIPin = 11;
 static constexpr int kSCKPin = 13;

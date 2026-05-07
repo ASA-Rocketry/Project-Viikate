@@ -20,7 +20,7 @@
 #define RAD_TO_DEG 57.2957795131  // Conversion factor from radians to degrees
 #define MG_TO_MPS2 0.00981f  // Conversion factor from milli-g to m/s^2
 
-ISM330DHCXSensor imu(&SPI, constants::kCsPin, 1000000);
+ISM330DHCXSensor imu(&SPI, constants::kImuCsPin, 1000000);
 BME280I2C bme;
 BME280::TempUnit tempUnit = BME280::TempUnit_Celsius;
 BME280::PresUnit presUnit = BME280::PresUnit_Pa;
@@ -54,7 +54,7 @@ bool use_filtered_data = true;  //whether to log and display filtered data
  * @param data_logger Reference to the DataLogger for event logging.
  */
 Sensors::Sensors(DataLogger &data_logger) :
-    imu(&SPI, constants::kCsPin, 1000000),
+    imu(&SPI, constants::kImuCsPin, 1000000),
     data_logger_(data_logger) {
     flight_data.altitude = 0.0f;
     flight_data.verticalVelocity = 0.0f;

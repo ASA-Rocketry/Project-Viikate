@@ -81,7 +81,7 @@ void setup() {
     control.Initialize();
     data_logger.LogEvent(LogType::kInfo, "SETUP COMPLETE");
 
-#elif DTEST_PID_AND_CALIBRATION_MODE
+#elif TEST_PID_AND_CALIBRATION_MODE
     // Initialize the two serial ports used for debugging and telemetry.
     Serial.begin(9600);
     Serial8.begin(9600);
@@ -104,7 +104,8 @@ void setup() {
     Serial.println("=== READY ===\n");
 
 #else
-    return;
+    //Initializing serial printing for debugging
+    Serial.begin(9600);
 #endif
 }
 
@@ -117,7 +118,8 @@ void setup() {
  */
 void loop() {
 #ifdef PRODUCTION_FLIGHT_MODE
-#elif DTEST_PID_AND_CALIBRATION_MODE
+    Serial.println("=== PRODUCTION FLIGHT MODE ===\n");
+#elif TEST_PID_AND_CALIBRATION_MODE
     // Acquire the latest sensor and attitude measurements.
     FlightData data = sensors.ReadFlightData();
     data_logger.LogFlightData(data);
@@ -199,21 +201,6 @@ void loop() {
     sendToSerial(Serial8, data, control);
 #elif TEST_STATE_MACHINE_MODE
     FlightData data = getSimulatedFlightData();
-    
-    /*
-    Serial.print("Data point: ");
-    Serial.print(data.timeMs / 1000.0f);
-    Serial.print(" s, Alt: ");
-    Serial.print(data.altitude);
-    Serial.print(" m, Vel: ");
-    Serial.print(data.verticalVelocity);
-    Serial.print(" m/s, Acc: ");
-    Serial.print(data.accZ);
-    Serial.println(" m/s²");
-    */
-    delay(100);  // Slow down output for readability
-
-    /*
     state_machine.Update(data);
 
     Serial.print("Current state: ");
@@ -231,8 +218,9 @@ void loop() {
     Serial.print("RBF Removed: ");
     Serial.println(data.rbfRemoved);
     Serial.println("--------------------");
-    */
+    delay(10);
+
 #else
-    return;
+    Serial.println("=== UNKNOWN MODE ===\n");
 #endif
 }

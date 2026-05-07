@@ -9,18 +9,19 @@
 DataLogger::DataLogger() {}
 
 void DataLogger::Initialize() {
-    pinMode(constants::kCsPin, OUTPUT);
-    SD.begin(constants::kCsPin);
+    SD.begin(BUILTIN_SDCARD);
 
     // Find the next available file name
     int i = 0;
-    while (SD.exists("flight" + String(i) + ".csv")) {
+    String path;
+    do {
+        path = "flight" + String(i) + ".csv";
         i++;
-    }
-    flight_file_ = "flight" + String(i) + ".csv";
-    event_file_ = "event" + String(i) + ".csv";
+    } while (SD.exists(path.c_str()));
+    flight_file_ = path;
+    event_file_ = "event" + String(i - 1) + ".csv";
 
-    flight_data_file_ = SD.open(flight_file_, FILE_WRITE);  // Flight Data File
+    flight_data_file_ = SD.open(flight_file_.c_str(), FILE_WRITE);  // Flight Data File
     if (flight_data_file_) {  // Writing headers for FDF
         flight_data_file_.println(
             "time_ms,altitude,vertical_velocity,accel_x,accel_y,accel_z,rot_x,rot_y,rot_z,mag_x,mag_y,mag_z,accel_magnitude,rbf_removed"
@@ -28,7 +29,7 @@ void DataLogger::Initialize() {
         flight_data_file_.flush();
     }
 
-    event_data_file_ = SD.open(event_file_, FILE_WRITE);  // Event Data File
+    event_data_file_ = SD.open(event_file_.c_str(), FILE_WRITE);  // Event Data File
     if (event_data_file_) {
         event_data_file_.println("time_ms,severity,message");
         event_data_file_.flush();

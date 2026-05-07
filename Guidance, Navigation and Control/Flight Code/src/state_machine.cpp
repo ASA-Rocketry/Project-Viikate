@@ -4,13 +4,14 @@
 
 const char* StateToString(State state) {
     switch (state) {
-        case State::kIdle: return "kIdle";
-        case State::kLaunchpad: return "kLaunchpad";
-        case State::kLiftoff: return "kLiftoff";
-        case State::kCoast: return "kCoast";
-        case State::kApogee: return "kApogee";
-        case State::kRDD: return "kRDD";
-        case State::kGround: return "kGround";
+        case State::kCalibration: return "Calibration: sensor calibration in progress";
+        case State::kIdle: return "Idle: armed check, no flight activity";
+        case State::kLaunchpad: return "Launchpad: RBF removed, waiting for ignition";
+        case State::kLiftoff: return "Liftoff: motor burning, strong upward acceleration";
+        case State::kCoast: return "Coast: burnout, upward velocity slowing";
+        case State::kApogee: return "Apogee: vertical velocity near zero";
+        case State::kRDD: return "RDD: descent/recovery device deployment";
+        case State::kGround: return "Ground: landed and stopped";
         default: return "Unknown";
     }
 }

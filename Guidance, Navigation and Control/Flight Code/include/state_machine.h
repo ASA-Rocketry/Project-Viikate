@@ -12,6 +12,7 @@
  * States should NEVER be skipped backward.
  */
 enum class State {
+    kCalibration,  // Sensor calibration in progress
     kIdle,        // Rocket is not armed, RBF installed and no flight activity
     kLaunchpad,   // RBF removed, armed and waiting for ignition
     kLiftoff,     // Motor burning, strong upward acceleration
