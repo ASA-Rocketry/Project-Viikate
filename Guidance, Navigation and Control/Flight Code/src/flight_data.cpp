@@ -142,7 +142,6 @@ void readSimulatedData() {
 FlightData getSimulatedFlightData() {
     if (simulated_index < simulatedData.size()) {
         FlightData data = simulatedData[simulated_index++];
-        data.rbfRemoved = true; // Simulated launch prep: allow state transitions.
         return data;
     }
 

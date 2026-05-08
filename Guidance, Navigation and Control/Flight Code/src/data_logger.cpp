@@ -9,7 +9,15 @@
 DataLogger::DataLogger() {}
 
 bool DataLogger::Initialize() {
-    SD.begin(BUILTIN_SDCARD);
+    
+    // Reset initialization state before attempting setup
+    initialized_ = false;
+
+    // Initialize SD card interface
+    if (!SD.begin(BUILTIN_SDCARD)) {
+    Serial.println("SD.begin failed");
+    return false;
+    }
 
     // Find the next available file name
     int i = 0;
@@ -18,26 +26,64 @@ bool DataLogger::Initialize() {
         path = "flight" + String(i) + ".csv";
         i++;
     } while (SD.exists(path.c_str()));
+
+    // Store generated file names
     flight_file_ = path;
     event_file_ = "event" + String(i - 1) + ".csv";
 
+    // Open flight data log file
     flight_data_file_ = SD.open(flight_file_.c_str(), FILE_WRITE);  // Flight Data File
-    if (flight_data_file_) {  // Writing headers for FDF
-        flight_data_file_.println(
-            "time_ms,altitude,vertical_velocity,accel_x,accel_y,accel_z,rot_x,rot_y,rot_z,mag_x,mag_y,mag_z,accel_magnitude,rbf_removed"
-        );
-        flight_data_file_.flush();
+    
+    // Check if the file was opened successfully
+    if (!flight_data_file_) {
+    Serial.println("ERROR: Failed to open flight data file");
+    return false;
     }
 
+    // Write CSV header for flight data
+    flight_data_file_.println(
+        "time_ms,altitude,vertical_velocity,"
+        "accel_x,accel_y,accel_z,"
+        "rot_x,rot_y,rot_z,"
+        "mag_x,mag_y,mag_z,"
+        "accel_magnitude,rbf_removed"
+    );
+
+    flight_data_file_.flush();
+
+    // Open event log file
     event_data_file_ = SD.open(event_file_.c_str(), FILE_WRITE);  // Event Data File
-    if (event_data_file_) {
-        event_data_file_.println("time_ms,severity,message");
-        event_data_file_.flush();
-        LogEvent(LogType::kInfo, "LOG START");
+
+    if (!event_data_file_) {
+
+        Serial.println("ERROR: Failed to open event log file");
+
+        // Clean up already-opened flight file
+        flight_data_file_.close();
+
+        return false;
     }
-    
-    Serial.println("DataLogger initialized!");
+
+    // Write CSV header for event log
+    event_data_file_.println(
+        "time_ms,severity,message"
+    );
+
+    event_data_file_.flush();
+
+    // Initial log entry
+    LogEvent(LogType::kInfo, "LOG START");
+
+    // Mark subsystem as successfully initialized
+    initialized_ = true;
+
+    Serial.println("DataLogger initialized successfully!");
+
     return true;
+}
+
+bool DataLogger::IsInitialized() const {
+    return initialized_;
 }
 
 void DataLogger::LogFlightData(const FlightData &data) {

@@ -28,6 +28,11 @@ Sensors sensors(data_logger);
 ControlHardware control_hardware;
 Control control;
 
+// Simulation state variables for TEST_STATE_MACHINE_MODE
+bool simulation_started = false;
+bool coastManeuverStarted = false;
+unsigned long coastStartTime = 0;
+
 // Last computed control error used for status reporting and LED state.
 float error;
 
@@ -95,6 +100,7 @@ void setup() {
     Serial.println("=== PRODUCTION FLIGHT MODE ===\n");
 
     pinMode(constants::kLEDPin, OUTPUT);
+    pinMode(constants::kRbfPin, INPUT_PULLUP);  // Hardware interlock pin
 
 #elif TEST_PID_AND_CALIBRATION_MODE
     // Initialize the two serial ports used for debugging and telemetry.
@@ -147,6 +153,7 @@ void setup() {
     Serial.println("\n\n=== TEST STATE MACHINE MODE ===");
 
     pinMode(constants::kLEDPin, OUTPUT);
+    pinMode(constants::kRbfPin, INPUT_PULLDOWN);  // Hardware interlock pin
 
 #else
     //Initializing serial printing for debugging
@@ -242,48 +249,166 @@ void loop() {
     // Send the compact telemetry packet to the secondary serial port.
     sendToSerial(Serial8, data, control);
 #elif TEST_STATE_MACHINE_MODE
-    FlightData simulated_data = getSimulatedFlightData();
+    /* 
+    ### kCalibration ### 
+    In this state the setup takes care of the initialization of the subsystems and loading of the simulated data. 
+    */
+    // Read real hardware data
     FlightData live_data = sensors.ReadFlightData();
+    FlightData state_input_data = live_data;
 
-    //Utilizing live Z angle for hardware in the loop simulation to get realistic control outputs and state transitions.
-    simulated_data.oriZ = live_data.oriZ;
+    /* 
+    ### kIdle ### 
+    The setup and calibration is done, but the launch interlock is still engaged. 
+    The state machine should not transition out of this state until the RBF pin is pulled.
+    */ 
 
-    state_machine.Update(simulated_data);
-    // Advance the test setpoint every fixed interval to verify controller response.
-    unsigned long currentTime = millis();
-    if (currentTime - lastSwitchTime >= interval) {
-        lastSwitchTime = currentTime;
-        setpoint_index = (setpoint_index + 1) % setpoints.size();
+    // Start simulation AFTER entering launchpad state
+    if (state_machine.GetState() == State::kLaunchpad &&
+        !simulation_started) {
+
+        simulation_started = true;
+
+        Serial.println("Simulation started");
     }
 
-    // Run the PID controller against the current orientation setpoint.
-    control.PID(
-        setpoints[setpoint_index],
-        simulated_data.oriZ
-    );
+    /* 
+    ### kLaunchpad ### 
+    The launch interlock has been removed, but the rocket is still on the launchpad.
+    The state machine should transition to liftoff once the vertical acceleration exceeds the desired threshold.
+    */ 
+    
+    /*
+    ### kLiftoff ###
+    The rocket has left the launchpad and is accelerating upwards.
+    */
 
+    if (simulation_started) {
+
+        FlightData simulated_data = getSimulatedFlightData();
+
+        // Hardware-in-the-loop inputs
+        simulated_data.oriZ = live_data.oriZ;
+        simulated_data.rbfRemoved = live_data.rbfRemoved;
+
+        state_input_data = simulated_data;
+    }
+
+    // Update state machine
+    State current_state = state_machine.Update(state_input_data);
+
+    unsigned long currentTime = millis();
+
+    // Control logic
+    switch (current_state) {
+        case State::kLiftoff:
+
+        // Force neutral during liftoff
+        control.PID(
+            0.0f,
+            state_input_data.oriZ
+        );
+
+        // Reset coast logic so it starts fresh later
+        coastManeuverStarted = false;
+
+        break;
+        /* 
+        ### kCoast ### 
+        At the beginning of coast phase, perform the roll maneuver to 90 deg and back.
+        */
+        case State::kCoast:
+
+            // Start maneuver once when entering coast
+            if (!coastManeuverStarted) {
+                coastManeuverStarted = true;
+                coastStartTime = currentTime;
+            }
+
+            float coastSetpoint;
+
+            // First 2 seconds: roll to 90°
+            if (currentTime - coastStartTime < 2000) {
+                coastSetpoint = 90.0f;
+            }
+            // After 2 seconds: return to neutral
+            else {
+                coastSetpoint = 0.0f;
+            }
+
+            control.PID(
+                coastSetpoint,
+                state_input_data.oriZ
+            );
+
+            break;
+
+        /* 
+        ### kApogee ### 
+        The PID control can be turned of before recovery device deployment.
+        */
+
+        case State::kApogee:
+
+            control.SetCanardAngle(0.0f);
+            break;
+
+        /* 
+        ### kRDD ### 
+        In the current implementation, the RDD is passive.
+        */
+
+        case State::kRDD:
+
+            control.SetCanardAngle(0.0f);
+            break;
+
+            /*
+            ### kGround ###
+            The vehicle has hit the ground, and data recording can be stoped
+            after a short delay.
+            */
+
+        case State::kGround:
+
+            control.SetCanardAngle(0.0f);
+            break;
+
+        default:
+            break;
+    }
+
+    // Debug output
     Serial.print("Current state: ");
-    Serial.println(StateToString(state_machine.GetState()));
+    Serial.println(StateToString(current_state));
+
     Serial.print("Time (s): ");
-    Serial.println(simulated_data.timeMs / 1000.0f);
+    Serial.println(state_input_data.timeMs / 1000.0f);
+
     Serial.print("Altitude (m): ");
-    Serial.println(simulated_data.altitude);
+    Serial.println(state_input_data.altitude);
+
     Serial.print("Vertical velocity (m/s): ");
-    Serial.println(simulated_data.verticalVelocity);
+    Serial.println(state_input_data.verticalVelocity);
+
     Serial.print("Vertical acceleration (m/s²): ");
-    Serial.println(simulated_data.accZ);
+    Serial.println(state_input_data.accZ);
+
     Serial.print("Total acceleration (m/s²): ");
-    Serial.println(simulated_data.accelMagnitude);
+    Serial.println(state_input_data.accelMagnitude);
+
     Serial.print("RBF Removed: ");
-    Serial.println(simulated_data.rbfRemoved);
+    Serial.println(state_input_data.rbfRemoved);
+
     Serial.print("Orientation Z (live): ");
-    Serial.println(simulated_data.oriZ);
-    Serial.print("Gyro Z rate (live): ");
-    Serial.println(simulated_data.rotZ);
+    Serial.println(state_input_data.oriZ);
+
     Serial.print("Current roll setpoint: ");
     Serial.println(setpoints[setpoint_index]);
+
     Serial.println("--------------------");
-    delay(10);
+
+    delay(500);
 
 #else
     Serial.println("=== UNKNOWN MODE ===\n");

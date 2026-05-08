@@ -87,6 +87,13 @@ private:
     /* ---------- State transition condition checks ---------- */
 
     /**
+     * @brief Check transition from kCalibration to kIdle.
+     *
+     * Typical conditions:
+     *  - All subsystems report successful initialization
+     */ bool CalibrationCheck(const FlightData& data) const;
+
+    /**
      * @brief Check transition from kIdle to kLaunchpad.
      *
      * Typical conditions:

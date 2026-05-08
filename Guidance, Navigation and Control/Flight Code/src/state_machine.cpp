@@ -24,6 +24,14 @@ State StateMachine::GetState() {
     return active_state;
 }
 
+bool StateMachine::CalibrationCheck(const FlightData& data) const{
+    if (data_logger_.IsInitialized() /*&& sensors_.IsInitialized() && control_.IsInitialized()*/) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 bool StateMachine::StagingCheck(const FlightData& data) const{
     if (data.rbfRemoved && (data.accZ < 1.0f)) {
         return true;
@@ -76,8 +84,11 @@ bool StateMachine::LandCheck(const FlightData& data) const{
 
 State StateMachine::Update(const FlightData& data){
     State next_state = active_state;
-
         switch (active_state) {
+            case State::kCalibration:
+                // For now, we will skip the calibration state and start in idle.
+                break;
+
             case State::kIdle:
                 if (StagingCheck(data)) next_state = State::kLaunchpad;
                 break;
@@ -107,7 +118,7 @@ State StateMachine::Update(const FlightData& data){
         }
 
         if (next_state != active_state) {
-#ifdef TEST_MODE
+#ifdef TEST_STATE_MACHINE_MODE
             Serial.print("Exiting state: ");
             Serial.println(StateToString(active_state));
             Serial.print("Entering state: ");
@@ -123,6 +134,9 @@ void StateMachine::OnEnter(State new_state, unsigned long time_ms) {
     state_entry_time_ms = time_ms;
     
     switch(new_state) {
+        case State::kCalibration:
+            break;
+        
         case State::kIdle:
             break;
 
@@ -143,6 +157,7 @@ void StateMachine::OnEnter(State new_state, unsigned long time_ms) {
             break;
 
         case State::kGround:
+            delay(2000); // Wait for 2 seconds to ensure all flight data is logged before closing files
             data_logger_.Close(); // Close SD card
             break;
 

@@ -121,3 +121,8 @@ void Control::PID(float set_angle_deg, float current_angle_deg) {
     // Command servos: maps [-30,30]° to [60,120]° servo range inside of the ControlHardware class
     control_hardware_.SetCanardAngle(saturated_output);
 }
+
+// Accessor for testing and debugging (wrapper around ControlHardware)
+void Control::SetCanardAngle(float angle) {
+    control_hardware_.SetCanardAngle(angle);
+}

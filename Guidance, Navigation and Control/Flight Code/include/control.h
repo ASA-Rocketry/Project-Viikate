@@ -16,6 +16,8 @@ class Control {
   void PID(float set_angle, float current_angle);
 
   float get_error() const { return previous_error_; } // Accessor for testing and debugging
+  
+  void SetCanardAngle(float angle);// Accessor for testing and debugging
 
  private:
   // PID state variables

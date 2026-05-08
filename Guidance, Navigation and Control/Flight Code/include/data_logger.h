@@ -35,6 +35,12 @@ class DataLogger {
         bool Initialize();
 
         /**
+         * @brief Checks if the data logger is initialized.
+         * @return true if initialized, false otherwise.
+         */
+        bool IsInitialized() const;
+
+        /**
          * @brief Records high-frequency flight telemetry.
          * @param data A constant reference to the FlightData struct containing current sensor values and the associated time stamp.
          */
@@ -67,6 +73,8 @@ class DataLogger {
         File flight_data_file_;
 
         File event_data_file_;
+        
+        bool initialized_ = false;
 };
 
 #endif  // FLIGHT_CODE_INCLUDE_DATA_LOGGER_H_
