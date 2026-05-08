@@ -32,7 +32,7 @@ class DataLogger {
          * * Sets up the SD card, finds the next available file index (e.g., flight3.csv),
          * and writes the CSV headers to both flight and event files.
          */
-        void Initialize();
+        bool Initialize();
 
         /**
          * @brief Records high-frequency flight telemetry.

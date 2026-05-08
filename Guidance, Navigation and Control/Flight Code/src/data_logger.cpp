@@ -8,7 +8,7 @@
 
 DataLogger::DataLogger() {}
 
-void DataLogger::Initialize() {
+bool DataLogger::Initialize() {
     SD.begin(BUILTIN_SDCARD);
 
     // Find the next available file name
@@ -35,6 +35,9 @@ void DataLogger::Initialize() {
         event_data_file_.flush();
         LogEvent(LogType::kInfo, "LOG START");
     }
+    
+    Serial.println("DataLogger initialized!");
+    return true;
 }
 
 void DataLogger::LogFlightData(const FlightData &data) {

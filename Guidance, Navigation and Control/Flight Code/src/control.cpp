@@ -28,6 +28,8 @@ bool Control::Initialize() {
     // NOTE: Assumes control_hardware_ member exists and has Initialize() method
     control_hardware_.Initialize();
 
+    Serial.println("Control initialized!");
+
     return true;
 }
 

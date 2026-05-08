@@ -11,10 +11,10 @@ namespace constants {
 static constexpr float kGravity = 9.81f;
 
 // Pins
-static constexpr int kServo1Pin = 5;
-static constexpr int kServo2Pin = 4;
-static constexpr int kServo3Pin = 3;
-static constexpr int kServo4Pin = 2;
+static constexpr int kServo1Pin = 2;
+static constexpr int kServo2Pin = 3;
+static constexpr int kServo3Pin = 4;
+static constexpr int kServo4Pin = 5;
 static constexpr int kUARTTxPin = 35;
 static constexpr int kUARTRxPin = 34;
 
@@ -46,6 +46,8 @@ static constexpr float kMaxControlAngle =
     30.0f;  // Max canard deflection in degrees
 static constexpr float kMinControlAngle =
     -30.0f;  // Min canard deflection in degrees
+static constexpr float kNeutralControlAngle =
+    0.0f;  // Neutral canard deflection in degrees
 
 // PID effective input range
 static constexpr float kPidMinAngle = -30.0f;

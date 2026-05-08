@@ -33,10 +33,10 @@ float error;
 
 // PID test pattern: alternate between two orientation setpoints every 10 seconds.
 unsigned long lastSwitchTime = 0;
-const unsigned long interval = 10000;
+const unsigned long interval = 5000;
 
 // Setpoints for the orientation test. The system toggles between these values.
-std::vector<float> setpoints = {-90.0f, 90.0f};
+std::vector<float> setpoints = {0.0f, 90.0f};
 int setpoint_index = 0;
 
 // Binary-packed telemetry packet structure sent over Serial8.
@@ -73,25 +73,53 @@ void setup() {
     // Initialize the two serial ports used for debugging and telemetry.
     Serial.begin(9600);
     Serial8.begin(9600);
+    delay(1000);  // Give serial time to initialize
+    Serial.println("\n\n=== PRODUCTION_FLIGHT_MODE STARTING ===");    
 
     // Initialize core subsystems in a safe order.
     // Data logger first so that any failures during sensors/control init can be recorded.
-    data_logger.Initialize();
-    sensors.Initialize();
-    control.Initialize();
+    if (!data_logger.Initialize()) {
+        Serial.println("Failed to initialize DataLogger!");
+        return;
+    }
+    if (!sensors.Initialize()) {
+        Serial.println("Failed to initialize Sensors!");
+        return;
+    }
+    if (!control.Initialize()) {
+        Serial.println("Failed to initialize Control!");
+        return;
+    }
     data_logger.LogEvent(LogType::kInfo, "SETUP COMPLETE");
+    
+    Serial.println("=== PRODUCTION FLIGHT MODE ===\n");
+
+    pinMode(constants::kLEDPin, OUTPUT);
 
 #elif TEST_PID_AND_CALIBRATION_MODE
     // Initialize the two serial ports used for debugging and telemetry.
     Serial.begin(9600);
     Serial8.begin(9600);
+    delay(1000);  // Give serial time to initialize
+    Serial.println("\n\n=== TEST_PID_AND_CALIBRATION_MODE STARTING ===");
 
     // Initialize core subsystems in a safe order.
     // Data logger first so that any failures during sensors/control init can be recorded.
-    data_logger.Initialize();
-    sensors.Initialize();
-    control.Initialize();
+    if (!data_logger.Initialize()) {
+        Serial.println("Failed to initialize DataLogger!");
+        return;
+    }
+    if (!sensors.Initialize()) {
+        Serial.println("Failed to initialize Sensors!");
+        return;
+    }
+    if (!control.Initialize()) {
+        Serial.println("Failed to initialize Control!");
+        return;
+    }
     data_logger.LogEvent(LogType::kInfo, "SETUP COMPLETE");
+
+    Serial.println("\n\n=== TEST_PID_AND_CALIBRATION_MODE ===");
 
     pinMode(constants::kLEDPin, OUTPUT);
 
@@ -100,8 +128,25 @@ void setup() {
     Serial.begin(9600);
     delay(1000);  // Give serial time to initialize
     Serial.println("\n\n=== TEST STATE MACHINE MODE STARTING ===");
+    // Initialize core subsystems in a safe order.
+    // Data logger first so that any failures during sensors/control init can be recorded.
+    if (!data_logger.Initialize()) {
+        Serial.println("Failed to initialize DataLogger!");
+        return;
+    }
+    if (!sensors.Initialize()) {
+        Serial.println("Failed to initialize Sensors!");
+        return;
+    }
+    if (!control.Initialize()) {
+        Serial.println("Failed to initialize Control!");
+        return;
+    }
     readSimulatedData();
-    Serial.println("=== READY ===\n");
+
+    Serial.println("\n\n=== TEST STATE MACHINE MODE ===");
+
+    pinMode(constants::kLEDPin, OUTPUT);
 
 #else
     //Initializing serial printing for debugging
@@ -118,7 +163,7 @@ void setup() {
  */
 void loop() {
 #ifdef PRODUCTION_FLIGHT_MODE
-    Serial.println("=== PRODUCTION FLIGHT MODE ===\n");
+  return;
 #elif TEST_PID_AND_CALIBRATION_MODE
     // Acquire the latest sensor and attitude measurements.
     FlightData data = sensors.ReadFlightData();
@@ -131,10 +176,7 @@ void loop() {
         lastSwitchTime = currentTime;
         setpoint_index = (setpoint_index + 1) % setpoints.size();
     }
-     //char serializedFlightData[512] = "";
-     //data.SerializeJson(serializedFlightData, sizeof(serializedFlightData));
-     //Serial8.println(serializedFlightData);
-
+    
     // Run the PID controller against the current orientation setpoint.
     control.PID(
         setpoints[setpoint_index],
@@ -200,23 +242,46 @@ void loop() {
     // Send the compact telemetry packet to the secondary serial port.
     sendToSerial(Serial8, data, control);
 #elif TEST_STATE_MACHINE_MODE
-    FlightData data = getSimulatedFlightData();
-    state_machine.Update(data);
+    FlightData simulated_data = getSimulatedFlightData();
+    FlightData live_data = sensors.ReadFlightData();
+
+    //Utilizing live Z angle for hardware in the loop simulation to get realistic control outputs and state transitions.
+    simulated_data.oriZ = live_data.oriZ;
+
+    state_machine.Update(simulated_data);
+    // Advance the test setpoint every fixed interval to verify controller response.
+    unsigned long currentTime = millis();
+    if (currentTime - lastSwitchTime >= interval) {
+        lastSwitchTime = currentTime;
+        setpoint_index = (setpoint_index + 1) % setpoints.size();
+    }
+
+    // Run the PID controller against the current orientation setpoint.
+    control.PID(
+        setpoints[setpoint_index],
+        simulated_data.oriZ
+    );
 
     Serial.print("Current state: ");
     Serial.println(StateToString(state_machine.GetState()));
     Serial.print("Time (s): ");
-    Serial.println(data.timeMs / 1000.0f);
+    Serial.println(simulated_data.timeMs / 1000.0f);
     Serial.print("Altitude (m): ");
-    Serial.println(data.altitude);
+    Serial.println(simulated_data.altitude);
     Serial.print("Vertical velocity (m/s): ");
-    Serial.println(data.verticalVelocity);
+    Serial.println(simulated_data.verticalVelocity);
     Serial.print("Vertical acceleration (m/s²): ");
-    Serial.println(data.accZ);
+    Serial.println(simulated_data.accZ);
     Serial.print("Total acceleration (m/s²): ");
-    Serial.println(data.accelMagnitude);
+    Serial.println(simulated_data.accelMagnitude);
     Serial.print("RBF Removed: ");
-    Serial.println(data.rbfRemoved);
+    Serial.println(simulated_data.rbfRemoved);
+    Serial.print("Orientation Z (live): ");
+    Serial.println(simulated_data.oriZ);
+    Serial.print("Gyro Z rate (live): ");
+    Serial.println(simulated_data.rotZ);
+    Serial.print("Current roll setpoint: ");
+    Serial.println(setpoints[setpoint_index]);
     Serial.println("--------------------");
     delay(10);
 

@@ -157,7 +157,7 @@ FlightData Sensors::ReadFlightData() {
 /**
  * @brief Initializes the sensors, including I2C and IMU.
  */
-void Sensors::Initialize() {
+bool Sensors::Initialize() {
     Wire.begin();  // Begin I2C transmission
 
     SPI.begin();
@@ -197,7 +197,10 @@ void Sensors::Initialize() {
 
     initialiseFilters();
 
-    delay(5000);
+    //delay(5000);
+
+    Serial.println("Sensors initialized!");
+    return true;
 }
 
 void Sensors::initialize_IMU() {

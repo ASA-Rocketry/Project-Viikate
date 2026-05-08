@@ -23,7 +23,7 @@ class Sensors {
   public:
     explicit Sensors(DataLogger &data_logger);
 
-    void Initialize();
+    bool Initialize();
     FlightData ReadFlightData();
 
   private:

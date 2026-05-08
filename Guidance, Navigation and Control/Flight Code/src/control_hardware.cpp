@@ -10,42 +10,22 @@ bool ControlHardware::Initialize() {
     canard_servo4_.attach(constants::kServo4Pin);
 
     initialisationAnimation();
-    delay(5000);
 
-    Serial.println("Control hardware initialized: Servos attached.");
-    // Set all servos to neutral 90 degree position
-    SetCanardAngle(constants::kServoNeutralAngle);
+    Serial.println("Control hardware initialized!");
 
     return true;
 }
 
 void ControlHardware::initialisationAnimation() {
-    // Example: Sweep from min to max and back
-    canard_servo1_.write(constants::kServoMinAngle + constants::kServoTrim1);
-    canard_servo2_.write(constants::kServoMinAngle + constants::kServoTrim2);
-    canard_servo3_.write(constants::kServoMinAngle + constants::kServoTrim3);
-    canard_servo4_.write(constants::kServoMinAngle + constants::kServoTrim4);
+    SetCanardAngle(constants::kMinControlAngle);
     delay(500);
-    canard_servo1_.write(constants::kServoMaxAngle + constants::kServoTrim1);
-    canard_servo2_.write(constants::kServoMaxAngle + constants::kServoTrim2);
-    canard_servo3_.write(constants::kServoMaxAngle + constants::kServoTrim3);
-    canard_servo4_.write(constants::kServoMaxAngle + constants::kServoTrim4);
+
+    SetCanardAngle(constants::kMaxControlAngle);
     delay(500);
-    canard_servo1_.write(
-        constants::kServoNeutralAngle + constants::kServoTrim1
-    );
-    canard_servo2_.write(
-        constants::kServoNeutralAngle + constants::kServoTrim2
-    );
-    canard_servo3_.write(
-        constants::kServoNeutralAngle + constants::kServoTrim3
-    );
-    canard_servo4_.write(
-        constants::kServoNeutralAngle + constants::kServoTrim4
-    );
+
+    SetCanardAngle(constants::kNeutralControlAngle); // Neutral control angle defined in constants.h
     delay(500);
 }
-
 void ControlHardware::SetCanardAngle(float pid_angle_degrees) {
     // Clamp PID output to valid operating range from constants
     float clamped_pid = constrain(
