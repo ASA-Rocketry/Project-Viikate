@@ -1,4 +1,3 @@
-
 #include "sensors.h"
 
 #include <BME280I2C.h>
@@ -160,17 +159,11 @@ FlightData Sensors::ReadFlightData() {
  */
 bool Sensors::Initialize() {
     Wire.begin();  // Begin I2C transmission
-    SPI.begin();  // Begin SPI transmission
 
-    if (!initialize_IMU()) {
-        return false;
-    }
-    if (!initializeMagnetometer()) {
-        return false;
-    }
-    if (!initializeBarometer()) {
-        return false;
-    }
+    SPI.begin();
+    initialize_IMU();
+    initializeMagnetometer();
+    initaliseBarometer();
 
     Serial.println("Sensors initialized.");
     Serial.println("=== Initial State ===");
@@ -202,7 +195,7 @@ bool Sensors::Initialize() {
 
     Serial.println("====================");
 
-    initializeFilters();
+    initialiseFilters();
 
     //delay(5000);
 
@@ -210,20 +203,16 @@ bool Sensors::Initialize() {
     return true;
 }
 
-bool Sensors::initialize_IMU() {    
-    initialized_ = false;
-    
+void Sensors::initialize_IMU() {
     if (!imu.begin()) {
         data_logger_.LogEvent(LogType::kCritical, "IMU INIT FAILURE");
         imu_initialized = false;
         Serial.println("ISM330DHCX IMU initialization unsuccessful.");
-        return false;
+    } else {
+        data_logger_.LogEvent(LogType::kInfo, "IMU INITIALIZED");
+        imu_initialized = true;
+        Serial.println("ISM330DHCX IMU initialized successfully.");
     }
-
-    imu_initialized = true;
-    data_logger_.LogEvent(LogType::kInfo, "IMU INITIALIZED");
-    Serial.println("ISM330DHCX IMU initialized successfully.");
-
     imu.ACC_SetFullScale(16);
     imu.GYRO_SetFullScale(2000);
     imu.FIFO_Set_Mode(ISM330DHCX_STREAM_MODE);  // continuous overwrite
@@ -235,25 +224,19 @@ bool Sensors::initialize_IMU() {
     imu.GYRO_Enable();
 
     Serial.println("Computing initial state from IMU readings...");
+
     delay(100);  // wait for IMU buffer to fill up with initial readings
 
     Sensors::IMU_Data_ imu_data_initial;
-    uint16_t init_samples;
-    imu.FIFO_Get_Num_Samples(&init_samples);
 
+    uint16_t init_samples;
+
+    imu.FIFO_Get_Num_Samples(&init_samples);
     if (init_samples > SAMPLE_THRESHOLD) {
         imu_data_initial = readIMU(init_samples);
         // Use initial accelerometer z-axis reading as reference for vertical velocity
         Sensors::initial_state_ = _computeInitialState(imu_data_initial);
     }
-    Serial.println("IMU initialized and calibrated.");
-    
-    initialized_ = true;
-    return true;
-}
-
-bool Sensors::IsInitialized() const {
-    return initialized_;
 }
 
 Sensors::InitialState
@@ -289,7 +272,7 @@ Sensors::_computeInitialState(const Sensors::IMU_Data_ &data) {
     return state;
 }
 
-bool Sensors::initializeFilters() {
+void Sensors::initialiseFilters() {
     //creating kalman filter for accelerometer
 
     const int acc_n =
@@ -422,7 +405,7 @@ bool Sensors::initializeFilters() {
     GyroKalman.init(gyr_A, gyr_Q, gyr_R, gyr_H, gyr_P, 0.0, gyr_x0);
 }
 
-bool Sensors::calibrateIMU() {
+void Sensors::calibrateIMU() {
     Serial.println("IMU calibration starting — hold still for 5 seconds...");
 
     // Accumulate samples over 5 seconds
@@ -454,7 +437,7 @@ bool Sensors::calibrateIMU() {
 
     if (sample_count == 0) {
         Serial.println("Calibration failed — no samples received.");
-        return false;
+        return;
     }
 
     // Average over all samples
@@ -507,12 +490,11 @@ bool Sensors::calibrateIMU() {
     // GyroKalman.reset();
 }
 
-bool Sensors::initializeMagnetometer() {
+void Sensors::initializeMagnetometer() {
     if (!mag.begin(Wire)) {
         data_logger_.LogEvent(LogType::kCritical, "MAGNETOMETER INIT FAILURE");
         mag_initialized = false;
         Serial.println("MMC5983MA magnetometer initialization unsuccessful.");
-        return false;
     } else {
         data_logger_.LogEvent(LogType::kInfo, "MAGNETOMETER INITIALIZED");
         mag_initialized = true;
@@ -524,22 +506,19 @@ bool Sensors::initializeMagnetometer() {
     mag.enableContinuousMode();  //enable continuous mode
     mag.setContinuousModeFrequency(
         OUTPUT_DATA_RATE
-    );  //set reading frequency to 100Hz
-    return true;
+    );  //set reading frquency to 100Hz
 }
 
-bool Sensors::initializeBarometer() {
+void Sensors::initaliseBarometer() {
     if (!bme.begin()) {
         data_logger_.LogEvent(LogType::kCritical, "BAROMETER INIT FAILURE");
         bme_initialized = false;
         Serial.println("BME280 barometer initialization unsuccessful.");
-        return false;
     } else {
         data_logger_.LogEvent(LogType::kInfo, "BAROMETER INITIALIZED");
         bme_initialized = true;
         Serial.println("BME280 barometer initialized successfully.");
     }
-    return true;
 }
 
 /** @brief Reads the current altitude (stub implementation). */

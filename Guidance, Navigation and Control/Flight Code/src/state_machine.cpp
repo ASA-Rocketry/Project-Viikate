@@ -1,9 +1,7 @@
-
 #include "state_machine.h"
 #include "constants.h"
 #include <Arduino.h>
 
-// Helper function to convert State enum to human-readable string for logging
 const char* StateToString(State state) {
     switch (state) {
         case State::kCalibration: return "Calibration: sensor calibration in progress";
@@ -18,26 +16,16 @@ const char* StateToString(State state) {
     }
 }
 
-// StateMachine implementation follows a simple pattern of checking transition conditions based on current state and input data, then updating the active state accordingly. State entry actions are currently handled in main() for simplicity and to avoid tight coupling of hardware control within the state machine logic.
-StateMachine::StateMachine(DataLogger& data_logger, Sensors& sensors, Control& control)
-    : data_logger_(data_logger),
-      sensors_(sensors),
-      control_(control),
-      active_state(State::kCalibration),
-      liftoff_time_ms(0),
-      state_entry_time_ms(0)
-{
-    // Log initial state
-    data_logger_.LogEvent(LogType::kInfo, "StateMachine initialized in state: " + String(StateToString(active_state)));
+StateMachine::StateMachine(DataLogger& data_logger): data_logger_(data_logger){
+    active_state = State::kIdle;
 }
 
-// This function is called once per main loop iteration. It evaluates transition conditions given current state and provided FlightData
 State StateMachine::GetState() {
     return active_state;
 }
 
 bool StateMachine::CalibrationCheck(const FlightData& data) const{
-    if (data_logger_.IsInitialized() && sensors_.IsInitialized() && control_.IsInitialized()) {
+    if (data_logger_.IsInitialized() /*&& sensors_.IsInitialized() && control_.IsInitialized()*/) {
         return true;
     } else {
         return false;
@@ -98,7 +86,7 @@ State StateMachine::Update(const FlightData& data){
     State next_state = active_state;
         switch (active_state) {
             case State::kCalibration:
-                if (CalibrationCheck(data)) next_state = State::kIdle;
+                // For now, we will skip the calibration state and start in idle.
                 break;
 
             case State::kIdle:
@@ -136,16 +124,12 @@ State StateMachine::Update(const FlightData& data){
             Serial.print("Entering state: ");
             Serial.println(StateToString(next_state));
 #endif
-            // OnEnter(next_state, data.timeMs); Removed, since main handles state entry actions for better separation of concerns and to avoid tight coupling of hardware control within the state machine logic.
+            OnEnter(next_state, data.timeMs);
             active_state = next_state;
     }
     return active_state;
 }
 
-
-// State entry actions are called in main.
-// Thus this function is depreciated.
-/*
 void StateMachine::OnEnter(State new_state, unsigned long time_ms) {
     state_entry_time_ms = time_ms;
     
@@ -181,4 +165,3 @@ void StateMachine::OnEnter(State new_state, unsigned long time_ms) {
             break;
     }
 }
-*/

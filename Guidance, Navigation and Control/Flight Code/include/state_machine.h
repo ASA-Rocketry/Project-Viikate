@@ -1,11 +1,9 @@
-
 #ifndef FLIGHT_CODE_INCLUDE_STATE_MACHINE_H_
 #define FLIGHT_CODE_INCLUDE_STATE_MACHINE_H_
 
 #include "constants.h"
 #include "data_logger.h" 
-#include "sensors.h"
-#include "control.h"
+
 /**
  * @file state_machine.h
  * @brief Discrete flight states for the rocket.
@@ -43,13 +41,9 @@ public:
     /**
      * @brief Construct a new StateMachine object.
      *
-     * Initializes the active state to kCalibration.
+     * Initializes the active state to kIdle.
      */
-    StateMachine(
-        DataLogger& data_logger, 
-        Sensors& sensors, 
-        Control& control
-    );
+    StateMachine(DataLogger& data_logger);
 
     /**
      * @brief Update the StateMachine instance with new flight data.
@@ -153,19 +147,15 @@ private:
      */
     bool LandCheck(const FlightData& data) const;
 
-    
     /**
      * @brief Handle state entry actions.
      *
      * Called exactly once when entering a new state.
      * Use this for resetting timers, latching events, etc.
      */
-    // void OnEnter(State newState, unsigned long timeMs); Depricated, since main handles state entry actions for better separation of concerns and to avoid tight coupling of hardware control within the state machine logic.
-
+    void OnEnter(State newState, unsigned long timeMs);
 
     DataLogger& data_logger_; 
-    Sensors& sensors_; 
-    Control& control_;
 };
 
 #endif  // FLIGHT_CODE_INCLUDE_STATE_MACHINE_H_

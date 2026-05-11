@@ -1,4 +1,3 @@
-
 // KalmanFilter.h
 #pragma once
 #include <ArduinoEigen.h>

@@ -1,4 +1,3 @@
-
 #include "control.h"
 
 #include "constants.h"
@@ -20,8 +19,6 @@ Control::Control() :
  * @return true if initialization successful, false otherwise.
  */
 bool Control::Initialize() {
-    initialized_ = false;
-
     // Reset PID state to ensure clean start
     previous_error_ = 0.0f;
     integral_error_ = 0.0f;
@@ -29,21 +26,12 @@ bool Control::Initialize() {
 
     // Initialize servo hardware (attaches pins, calibrates to 90°)
     // NOTE: Assumes control_hardware_ member exists and has Initialize() method
-    if (!control_hardware_.Initialize()) {
-        Serial.println("Failed to initialize ControlHardware!");
-        return false;
-    }
+    control_hardware_.Initialize();
 
     Serial.println("Control initialized!");
 
-    initialized_ = true;
     return true;
 }
-
-bool Control::IsInitialized() const {
-    return initialized_;
-}
-
 
 /**
  * @brief Executes the PID control loop.

@@ -1,4 +1,3 @@
-
 #ifndef FLIGHT_CODE_INCLUDE_SENSORS_H_
 #define FLIGHT_CODE_INCLUDE_SENSORS_H_
 
@@ -27,16 +26,9 @@ class Sensors {
     bool Initialize();
     FlightData ReadFlightData();
 
-    /**
-     * @brief Checks if the sensors are initialized.
-     * @return true if initialized, false otherwise.
-     */
-    bool IsInitialized() const;
-
   private:
     // flight data
     FlightData flight_data;
-    bool initialized_ = false;
 
     // IMU data
     struct IMU_Data_ {
@@ -78,11 +70,11 @@ class Sensors {
     IMU_Data_ readIMU(uint16_t num_samples);
     Mag_Data_ readMagnetometer();
     InitialState _computeInitialState(const IMU_Data_ &data);
-    bool calibrateIMU();
-    bool initialize_IMU();
-    bool initializeMagnetometer();
-    bool initializeBarometer();
-    bool initializeFilters();
+    void calibrateIMU();
+    void initialize_IMU();
+    void initializeMagnetometer();
+    void initaliseBarometer();
+    void initialiseFilters();
 
     ISM330DHCXSensor imu;  // class member
     SFE_MMC5983MA mag;

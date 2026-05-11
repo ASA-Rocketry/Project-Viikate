@@ -1,4 +1,3 @@
-
 #include "data_logger.h"
 
 #include <Arduino.h>
