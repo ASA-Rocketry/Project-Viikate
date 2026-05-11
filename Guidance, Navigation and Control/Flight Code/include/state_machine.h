@@ -159,7 +159,7 @@ private:
      * Called exactly once when entering a new state.
      * Use this for resetting timers, latching events, etc.
      */
-    void OnEnter(State newState, unsigned long timeMs);
+    // void OnEnter(State newState, unsigned long timeMs); Depricated, since main handles state entry actions for better separation of concerns and to avoid tight coupling of hardware control within the state machine logic.
 
 
     DataLogger& data_logger_; 

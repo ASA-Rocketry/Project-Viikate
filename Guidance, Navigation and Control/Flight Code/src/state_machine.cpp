@@ -135,7 +135,7 @@ State StateMachine::Update(const FlightData& data){
             Serial.print("Entering state: ");
             Serial.println(StateToString(next_state));
 #endif
-            OnEnter(next_state, data.timeMs);
+            // OnEnter(next_state, data.timeMs); Removed, since main handles state entry actions for better separation of concerns and to avoid tight coupling of hardware control within the state machine logic.
             active_state = next_state;
     }
     return active_state;
@@ -144,6 +144,7 @@ State StateMachine::Update(const FlightData& data){
 
 // State entry actions are called in main.
 // Thus this function is depreciated.
+/*
 void StateMachine::OnEnter(State new_state, unsigned long time_ms) {
     state_entry_time_ms = time_ms;
     
@@ -179,3 +180,4 @@ void StateMachine::OnEnter(State new_state, unsigned long time_ms) {
             break;
     }
 }
+*/

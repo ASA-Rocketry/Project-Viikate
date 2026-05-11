@@ -31,6 +31,9 @@ bool simulation_started = false;
 bool coastManeuverStarted = false;
 unsigned long coastStartTime = 0;
 
+// Track previous state for edge detection
+static State previous_state = State::kCalibration;
+
 // Last computed control error used for status reporting and LED state.
 float error;
 
@@ -148,13 +151,15 @@ void loop() {
     // Read real hardware data
     FlightData live_data = sensors.ReadFlightData();
     FlightData state_input_data = live_data;
+
+    unsigned long currentTime = millis();
+
     #ifdef TEST_PID_AND_CALIBRATION_MODE
         // In PID test mode, we use live sensor data for state machine transitions,
         // but the control loop will be tested against the predefined setpoints.
-            // Acquire the latest sensor and attitude measurements.
+        
+        // Acquire the latest sensor and attitude measurements.
         data_logger.LogFlightData(state_input_data);
-
-        unsigned long currentTime = millis();
 
         // Advance the test setpoint every fixed interval to verify controller response.
         if (currentTime - lastSwitchTime >= interval) {
@@ -226,8 +231,7 @@ void loop() {
 
         // Send the compact telemetry packet to the secondary serial port.
         sendToSerial(Serial8, state_input_data, control);
-    #else
-        
+    #elif defined(TEST_STATE_MACHINE_MODE) || defined(PRODUCTION_FLIGHT_MODE)
         /* 
         ### kCalibration ### 
         In this state the setup takes care of the initialization of the subsystems and loading of the simulated data. 
@@ -272,10 +276,20 @@ void loop() {
                 state_input_data = simulated_data;
             }
         #endif
+
+        // Acquire the latest sensor and attitude measurements.
+        data_logger.LogFlightData(state_input_data);
+
         // Update state machine
         State current_state = state_machine.Update(state_input_data);
 
-        unsigned long currentTime = millis();
+        // Detect state transition (edge detection)
+        bool stateChanged = (current_state != previous_state);
+        previous_state = current_state;
+
+        if (stateChanged) {
+            data_logger.LogEvent(LogType::kInfo, "State changed: " + String(StateToString(current_state)));
+        }
 
         // Control logic
         switch (current_state) {
@@ -345,7 +359,21 @@ void loop() {
 
             case State::kGround: {
 
+                static unsigned long groundEntryTime = 0;
+                static bool loggerClosed = false;
+
                 control.SetCanardAngle(0.0f);
+
+                if (stateChanged) {
+                    groundEntryTime = currentTime;
+                    loggerClosed = false;
+                }
+
+                if (!loggerClosed && currentTime - groundEntryTime > 2000) {
+                    data_logger.Close();
+                    loggerClosed = true;
+                }
+
                 break;
             }
             default: {
