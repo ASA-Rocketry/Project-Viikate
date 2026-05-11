@@ -158,12 +158,12 @@ FlightData Sensors::ReadFlightData() {
  * @brief Initializes the sensors, including I2C and IMU.
  */
 bool Sensors::Initialize() {
-  Wire.begin();  // Begin I2C transmission
-  SPI.begin();  // Begin SPI transmission
+    Wire.begin();  // Begin I2C transmission
+    SPI.begin();  // Begin SPI transmission
 
-  if (!initialize_IMU()) {
-    return false;
-  }
+    if (!initialize_IMU()) {
+        return false;
+    }
     if (!initializeMagnetometer()) {
         return false;
     }
@@ -453,7 +453,7 @@ bool Sensors::calibrateIMU() {
 
     if (sample_count == 0) {
         Serial.println("Calibration failed — no samples received.");
-        return;
+        return false;
     }
 
     // Average over all samples
