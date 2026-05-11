@@ -3,7 +3,8 @@
 
 #include "constants.h"
 #include "data_logger.h" 
-
+#include "sensors.h"
+#include "control.h"
 /**
  * @file state_machine.h
  * @brief Discrete flight states for the rocket.
@@ -41,9 +42,13 @@ public:
     /**
      * @brief Construct a new StateMachine object.
      *
-     * Initializes the active state to kIdle.
+     * Initializes the active state to kCalibration.
      */
-    StateMachine(DataLogger& data_logger);
+    StateMachine(
+        DataLogger& data_logger, 
+        Sensors& sensors, 
+        Control& control
+    );
 
     /**
      * @brief Update the StateMachine instance with new flight data.
@@ -156,6 +161,8 @@ private:
     void OnEnter(State newState, unsigned long timeMs);
 
     DataLogger& data_logger_; 
+    Sensors& sensors_; 
+    Control& control_;
 };
 
 #endif  // FLIGHT_CODE_INCLUDE_STATE_MACHINE_H_

@@ -19,7 +19,14 @@ class Control {
   
   void SetCanardAngle(float angle);// Accessor for testing and debugging
 
+    /**
+     * @brief Checks if the control system is initialized.
+     * @return true if initialized, false otherwise.
+     */
+    bool IsInitialized() const;
+
  private:
+  bool initialized_ = false;
   // PID state variables
   float previous_error_;      // Previous angular error for derivative calculation
   float integral_error_;      // Accumulated error for integral term

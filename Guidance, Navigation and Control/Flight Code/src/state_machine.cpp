@@ -16,16 +16,26 @@ const char* StateToString(State state) {
     }
 }
 
-StateMachine::StateMachine(DataLogger& data_logger): data_logger_(data_logger){
-    active_state = State::kIdle;
+// StateMachine implementation
+StateMachine::StateMachine(DataLogger& data_logger, Sensors& sensors, Control& control)
+    : data_logger_(data_logger),
+      sensors_(sensors),
+      control_(control),
+      active_state(State::kCalibration),
+      liftoff_time_ms(0),
+      state_entry_time_ms(0)
+{
+    // Log initial state
+    data_logger_.LogEvent(LogType::kInfo, "StateMachine initialized in state: " + String(StateToString(active_state)));
 }
 
+// This function is called once per main loop iteration. It evaluates transition conditions given current state and provided FlightData
 State StateMachine::GetState() {
     return active_state;
 }
 
 bool StateMachine::CalibrationCheck(const FlightData& data) const{
-    if (data_logger_.IsInitialized() /*&& sensors_.IsInitialized() && control_.IsInitialized()*/) {
+    if (data_logger_.IsInitialized() && sensors_.IsInitialized() && control_.IsInitialized()) {
         return true;
     } else {
         return false;
@@ -86,7 +96,7 @@ State StateMachine::Update(const FlightData& data){
     State next_state = active_state;
         switch (active_state) {
             case State::kCalibration:
-                // For now, we will skip the calibration state and start in idle.
+                if (CalibrationCheck(data)) next_state = State::kIdle;
                 break;
 
             case State::kIdle:

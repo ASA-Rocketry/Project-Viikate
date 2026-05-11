@@ -21,10 +21,10 @@
 
 // Global subsystem instances used throughout the flight control loop.
 DataLogger data_logger;
-StateMachine state_machine(data_logger);
 Sensors sensors(data_logger);
 ControlHardware control_hardware;
 Control control;
+StateMachine state_machine(data_logger, sensors, control);
 
 // Simulation state variables for TEST_STATE_MACHINE_MODE
 bool simulation_started = false;
