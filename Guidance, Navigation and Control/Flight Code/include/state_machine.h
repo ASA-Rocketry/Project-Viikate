@@ -152,6 +152,7 @@ private:
      */
     bool LandCheck(const FlightData& data) const;
 
+    
     /**
      * @brief Handle state entry actions.
      *
@@ -159,6 +160,7 @@ private:
      * Use this for resetting timers, latching events, etc.
      */
     void OnEnter(State newState, unsigned long timeMs);
+
 
     DataLogger& data_logger_; 
     Sensors& sensors_; 

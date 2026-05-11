@@ -2,6 +2,7 @@
 #include "constants.h"
 #include <Arduino.h>
 
+// Helper function to convert State enum to human-readable string for logging
 const char* StateToString(State state) {
     switch (state) {
         case State::kCalibration: return "Calibration: sensor calibration in progress";
@@ -16,7 +17,7 @@ const char* StateToString(State state) {
     }
 }
 
-// StateMachine implementation
+// StateMachine implementation follows a simple pattern of checking transition conditions based on current state and input data, then updating the active state accordingly. State entry actions are currently handled in main() for simplicity and to avoid tight coupling of hardware control within the state machine logic.
 StateMachine::StateMachine(DataLogger& data_logger, Sensors& sensors, Control& control)
     : data_logger_(data_logger),
       sensors_(sensors),
@@ -140,6 +141,9 @@ State StateMachine::Update(const FlightData& data){
     return active_state;
 }
 
+
+// State entry actions are called in main.
+// Thus this function is depreciated.
 void StateMachine::OnEnter(State new_state, unsigned long time_ms) {
     state_entry_time_ms = time_ms;
     

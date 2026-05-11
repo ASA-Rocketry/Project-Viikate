@@ -64,6 +64,7 @@ struct TelemetryData {
  * control error into a compact binary packet for external logging or analysis.
  * It uses Serial8 as the dedicated telemetry transport path.
  */
+#if defined(TEST_STATE_MACHINE_MODE) || defined(TEST_PID_AND_CALIBRATION_MODE)
 void sendToSerial(Print& serial, const FlightData& data, const Control& control) {
     TelemetryData telem;
     telem.altitude = data.altitude;
@@ -75,9 +76,10 @@ void sendToSerial(Print& serial, const FlightData& data, const Control& control)
 
     serial.write((uint8_t *)&telem, sizeof(telem));
 }
+#endif
 
 void setup() {
-    #ifdef defined(TEST_STATE_MACHINE_MODE) || defined(TEST_PID_AND_CALIBRATION_MODE)
+    #if defined(TEST_STATE_MACHINE_MODE) || defined(TEST_PID_AND_CALIBRATION_MODE)
         // Initialize the primary debug serial port.
         Serial.begin(9600);
         #ifdef TEST_STATE_MACHINE_MODE
