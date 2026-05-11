@@ -11,7 +11,7 @@ KalmanFilter::KalmanFilter(double dt,
                              const Eigen::MatrixXd& P0)
     : A(A), Q(Q), R(R), P0(P0), I(I), m(R.rows()), n(A.rows()), dt(dt), initialised(false) {
         
-        I.setIdentity(m, n);
+        I = Eigen::MatrixXd::Identity(A.rows(), A.rows());
 
     }
 
