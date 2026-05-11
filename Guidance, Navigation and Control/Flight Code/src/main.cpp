@@ -23,10 +23,13 @@
 
 // Global subsystem instances used throughout the flight control loop.
 DataLogger data_logger;
-StateMachine state_machine(data_logger);
 Sensors sensors(data_logger);
 ControlHardware control_hardware;
 Control control;
+
+#if defined(PRODUCTION_FLIGHT_MODE) || defined(TEST_STATE_MACHINE_MODE)
+    StateMachine state_machine(data_logger);
+#endif
 
 // Simulation state variables for TEST_STATE_MACHINE_MODE
 bool simulation_started = false;
@@ -408,7 +411,7 @@ void loop() {
 
     Serial.println("--------------------");
 
-    delay(500);
+    //delay(500);
 
 #else
     Serial.println("=== UNKNOWN MODE ===\n");
