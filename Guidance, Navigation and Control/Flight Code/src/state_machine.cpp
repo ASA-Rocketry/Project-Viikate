@@ -1,4 +1,5 @@
 #include "state_machine.h"
+#include "control.h"
 #include "constants.h"
 #include <Arduino.h>
 
@@ -16,7 +17,7 @@ const char* StateToString(State state) {
     }
 }
 
-StateMachine::StateMachine(DataLogger& data_logger): data_logger_(data_logger){
+StateMachine::StateMachine(DataLogger& data_logger, Control& control): data_logger_(data_logger), control_(control){
     active_state = State::kCalibration;
 }
 
@@ -24,8 +25,8 @@ State StateMachine::GetState() {
     return active_state;
 }
 
-bool StateMachine::CalibrationCheck(const FlightData& data) const{
-    if (data_logger_.IsInitialized() /*&& sensors_.IsInitialized() && control_.IsInitialized()*/) {
+bool StateMachine::IdleCheck(const FlightData& data) const{
+    if (data_logger_.IsInitialized() /*&& sensors_.IsInitialized()*/ && control_.IsInitialized()) {
         return true;
     } else {
         return false;
@@ -86,7 +87,7 @@ State StateMachine::Update(const FlightData& data){
     State next_state = active_state;
         switch (active_state) {
             case State::kCalibration:
-                if (CalibrationCheck(data)) next_state = State::kIdle;
+                if (IdleCheck(data)) next_state = State::kIdle;
                 break;
 
             case State::kIdle:

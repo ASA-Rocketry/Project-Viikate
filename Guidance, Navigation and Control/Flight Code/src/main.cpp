@@ -19,8 +19,6 @@
 #include "sensors.h"
 #include "state_machine.h"
 
-#include <vector>
-
 // Global subsystem instances used throughout the flight control loop.
 DataLogger data_logger;
 Sensors sensors(data_logger);
@@ -29,7 +27,7 @@ Control control;
 
 // State machine is only needed in production flight mode and state machine testing mode.
 #if defined(PRODUCTION_FLIGHT_MODE) || defined(TEST_STATE_MACHINE_MODE)
-    StateMachine state_machine(data_logger);
+    StateMachine state_machine(data_logger, control);
 #endif
 
 // Simulation state variables for TEST_STATE_MACHINE_MODE
@@ -41,6 +39,8 @@ Control control;
     bool coastManeuverStarted = false;
     unsigned long coastStartTime = 0;
 #endif
+
+float coastSetpoint = 0.0f;
 
 // Last computed control error used for status reporting and LED state.
 float error;
@@ -167,7 +167,7 @@ void loop() {
 
     // Start simulation once launchpad state is reached.
     if ((state_machine.GetState() == State::kLaunchpad) && !simulation_started) {
-        delay(5000); // Short delay to ensure stable transition before starting simulation
+        delay(30000); // Short delay to ensure stable transition before starting simulation
         simulation_started = true;
         Serial.println("Simulation started");
     }
@@ -203,12 +203,12 @@ void loop() {
             coastManeuverStarted = false;
             break;
         }
-
+        
         /// ### kCoast ###
         // In the coast phase, we perform a roll maneuver to 180 degrees and back to neutral.
         case State::kCoast: {
-            float coastSetpoint = 0.0f;
-
+            
+            coastSetpoint = 0.0f;
 
             if (!coastManeuverStarted) {
 
@@ -234,20 +234,22 @@ void loop() {
         /// ### kApogee ###
         // At apogee, we set the canard angle to neutral to prepare for descent and recovery device deployment.
         case State::kApogee:{
-          control.SetCanardAngle(0.0f);
-          break;
+            control.SetCanardAngle(0.0f);
+            break;
         }
 
         /// ### kRDD ###
         case State::kRDD:{
-          control.SetCanardAngle(0.0f);
-          break;
+            control.SetCanardAngle(0.0f);
+            break;
         }
 
         /// ### kGround ###
         case State::kGround:{
-          control.SetCanardAngle(0.0f);
-          break;
+            control.SetCanardAngle(0.0f);
+            delay(2000); // Wait for 2 seconds to ensure all flight data is logged before closing files
+            data_logger.Close(); // Close SD card
+            break;
         } 
 
         default:
@@ -280,7 +282,7 @@ void loop() {
     Serial.println(inputData.oriZ);
 
     Serial.print("Current roll setpoint: ");
-    Serial.println(setpoints[setpointIndex]);
+    Serial.println(coastSetpoint);
 
     Serial.println("--------------------");
     //delay(500);

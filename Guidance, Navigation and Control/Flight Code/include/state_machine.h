@@ -2,7 +2,8 @@
 #define FLIGHT_CODE_INCLUDE_STATE_MACHINE_H_
 
 #include "constants.h"
-#include "data_logger.h" 
+#include "data_logger.h"
+#include "control.h"
 
 /**
  * @file state_machine.h
@@ -43,7 +44,7 @@ public:
      *
      * Initializes the active state to kIdle.
      */
-    StateMachine(DataLogger& data_logger);
+    StateMachine(DataLogger& data_logger, Control& control);
 
     /**
      * @brief Update the StateMachine instance with new flight data.
@@ -91,7 +92,7 @@ private:
      *
      * Typical conditions:
      *  - All subsystems report successful initialization
-     */ bool CalibrationCheck(const FlightData& data) const;
+     */ bool IdleCheck(const FlightData& data) const;
 
     /**
      * @brief Check transition from kIdle to kLaunchpad.
@@ -156,6 +157,7 @@ private:
     void OnEnter(State newState, unsigned long timeMs);
 
     DataLogger& data_logger_; 
+    Control& control_;
 };
 
 #endif  // FLIGHT_CODE_INCLUDE_STATE_MACHINE_H_
