@@ -17,7 +17,7 @@ const char* StateToString(State state) {
 }
 
 StateMachine::StateMachine(DataLogger& data_logger): data_logger_(data_logger){
-    active_state = State::kIdle;
+    active_state = State::kCalibration;
 }
 
 State StateMachine::GetState() {
@@ -86,7 +86,7 @@ State StateMachine::Update(const FlightData& data){
     State next_state = active_state;
         switch (active_state) {
             case State::kCalibration:
-                // For now, we will skip the calibration state and start in idle.
+                if (CalibrationCheck(data)) next_state = State::kIdle;
                 break;
 
             case State::kIdle:

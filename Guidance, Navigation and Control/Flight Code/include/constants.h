@@ -62,10 +62,10 @@ static constexpr float kServoNeutralAngle =
     90.0f;  // Servo neutral command angle
 
 // servo trimming parameters
-static float kServoTrim1 = -10.0f;
-static float kServoTrim2 = -10.0f;
-static float kServoTrim3 = -10.0f;
-static float kServoTrim4 = -10.0f;
+static float kServoTrim1 = -12.0f;
+static float kServoTrim2 = -4.0f;
+static float kServoTrim3 = -4.0f;
+static float kServoTrim4 = -2.0f;
 
 static const unsigned long CALIBRATION_DURATION_MS = 5000;
 }  // namespace constants
