@@ -27,62 +27,82 @@ Sensors sensors(data_logger);
 ControlHardware control_hardware;
 Control control;
 
+// State machine is only needed in production flight mode and state machine testing mode.
 #if defined(PRODUCTION_FLIGHT_MODE) || defined(TEST_STATE_MACHINE_MODE)
     StateMachine state_machine(data_logger);
 #endif
 
 // Simulation state variables for TEST_STATE_MACHINE_MODE
-bool simulation_started = false;
-bool coastManeuverStarted = false;
-unsigned long coastStartTime = 0;
+#ifdef TEST_STATE_MACHINE_MODE
+    bool simulation_started = false;
+    bool coastManeuverStarted = false;
+    unsigned long coastStartTime = 0;
+#endif
 
 // Last computed control error used for status reporting and LED state.
 float error;
 
-// PID test pattern: alternate between two orientation setpoints every 10 seconds.
-unsigned long lastSwitchTime = 0;
-const unsigned long interval = 5000;
+// Timing variables for setpoint switching in TEST_PID_AND_CALIBRATION_MODE.
+#ifdef TEST_PID_AND_CALIBRATION_MODE
+    static unsigned long lastSwitchTime = 0;
+    static constexpr unsigned long interval = 5000;
+#endif
 
-// Setpoints for the orientation test. The system toggles between these values.
-std::vector<float> setpoints = {0.0f, 90.0f};
-int setpoint_index = 0;
+// Predefined setpoints for PID testing (0° and 90° roll).
+// Using constexpr array for fixed setpoints known at compile time.
+// This is more efficient for embedded systems than dynamic structures like std::vector.
+constexpr float setpoints[] = {0.0f, 90.0f};
+constexpr size_t numSetpoints = sizeof(setpoints) / sizeof(setpoints[0]);
 
-// Binary-packed telemetry packet structure sent over Serial8.
-struct TelemetryData {
-    float altitude;
-    float verticalVelocity;
-    float accZ;
-    float rotZ;
-    float error;
-    uint32_t timestamp;
-} __attribute__((packed));
+static constexpr size_t setpointIndexInitial = 0;
+static size_t setpointIndex = setpointIndexInitial;
 
-/**
- * @brief Send a packed telemetry packet to a serial port.
- *
- * This function converts the selected FlightData values and the current
- * control error into a compact binary packet for external logging or analysis.
- * It uses Serial8 as the dedicated telemetry transport path.
- */
-void sendToSerial(Print &serial, FlightData data, Control control) {
-    TelemetryData telem;
-    telem.altitude = data.altitude;
-    telem.verticalVelocity = data.verticalVelocity;
-    telem.accZ = data.accZ;
-    telem.rotZ = data.oriZ;
-    telem.error = control.get_error();
-    telem.timestamp = micros();
+#if defined(TEST_STATE_MACHINE_MODE) || defined(TEST_PID_AND_CALIBRATION_MODE)
+    // Binary-packed telemetry packet structure sent over Serial8.
+    struct TelemetryData {
+        float altitude;
+        float verticalVelocity;
+        float accZ;
+        float rotZ;
+        float error;
+        uint32_t timestamp;
+    } __attribute__((packed));
 
-    serial.write((uint8_t *)&telem, sizeof(telem));
-}
+    /**
+     * @brief Send a packed telemetry packet to a serial port.
+     *
+     * This function converts the selected FlightData values and the current
+     * control error into a compact binary packet for external logging or analysis.
+     * It uses Serial8 as the dedicated telemetry transport path.
+     */
+    void sendToSerial(Print &serial, FlightData data, Control control) {
+        TelemetryData telem;
+        telem.altitude = data.altitude;
+        telem.verticalVelocity = data.verticalVelocity;
+        telem.accZ = data.accZ;
+        telem.rotZ = data.oriZ;
+        telem.error = control.get_error();
+        telem.timestamp = micros();
+
+        serial.write((uint8_t *)&telem, sizeof(telem));
+    }
+#endif
 
 void setup() {
-#ifdef PRODUCTION_FLIGHT_MODE
+#if defined(TEST_STATE_MACHINE_MODE) || defined(TEST_PID_AND_CALIBRATION_MODE)
     // Initialize the two serial ports used for debugging and telemetry.
     Serial.begin(9600);
     Serial8.begin(9600);
     delay(1000);  // Give serial time to initialize
+#endif
+
+#ifdef PRODUCTION_FLIGHT_MODE
     Serial.println("\n\n=== PRODUCTION_FLIGHT_MODE STARTING ===");    
+#elif TEST_STATE_MACHINE_MODE
+    Serial.println("\n\n=== TEST_STATE_MACHINE_MODE STARTING ===");
+#elif TEST_PID_AND_CALIBRATION_MODE
+    Serial.println("\n\n=== TEST_PID_AND_CALIBRATION_MODE STARTING ===");
+#endif
 
     // Initialize core subsystems in a safe order.
     // Data logger first so that any failures during sensors/control init can be recorded.
@@ -99,68 +119,20 @@ void setup() {
         return;
     }
     data_logger.LogEvent(LogType::kInfo, "SETUP COMPLETE");
-    
-    Serial.println("=== PRODUCTION FLIGHT MODE ===\n");
 
     pinMode(constants::kLEDPin, OUTPUT);
     pinMode(constants::kRbfPin, INPUT_PULLUP);  // Hardware interlock pin
 
-#elif TEST_PID_AND_CALIBRATION_MODE
-    // Initialize the two serial ports used for debugging and telemetry.
-    Serial.begin(9600);
-    Serial8.begin(9600);
-    delay(1000);  // Give serial time to initialize
-    Serial.println("\n\n=== TEST_PID_AND_CALIBRATION_MODE STARTING ===");
-
-    // Initialize core subsystems in a safe order.
-    // Data logger first so that any failures during sensors/control init can be recorded.
-    if (!data_logger.Initialize()) {
-        Serial.println("Failed to initialize DataLogger!");
-        return;
-    }
-    if (!sensors.Initialize()) {
-        Serial.println("Failed to initialize Sensors!");
-        return;
-    }
-    if (!control.Initialize()) {
-        Serial.println("Failed to initialize Control!");
-        return;
-    }
-    data_logger.LogEvent(LogType::kInfo, "SETUP COMPLETE");
-
-    Serial.println("\n\n=== TEST_PID_AND_CALIBRATION_MODE ===");
-
-    pinMode(constants::kLEDPin, OUTPUT);
-
-#elif TEST_STATE_MACHINE_MODE
-    // Initialize the primary debug serial port.
-    Serial.begin(9600);
-    delay(1000);  // Give serial time to initialize
-    Serial.println("\n\n=== TEST STATE MACHINE MODE STARTING ===");
-    // Initialize core subsystems in a safe order.
-    // Data logger first so that any failures during sensors/control init can be recorded.
-    if (!data_logger.Initialize()) {
-        Serial.println("Failed to initialize DataLogger!");
-        return;
-    }
-    if (!sensors.Initialize()) {
-        Serial.println("Failed to initialize Sensors!");
-        return;
-    }
-    if (!control.Initialize()) {
-        Serial.println("Failed to initialize Control!");
-        return;
-    }
+#ifdef TEST_STATE_MACHINE_MODE
     readSimulatedData();
+#endif
 
-    Serial.println("\n\n=== TEST STATE MACHINE MODE ===");
-
-    pinMode(constants::kLEDPin, OUTPUT);
-    pinMode(constants::kRbfPin, INPUT_PULLDOWN);  // Hardware interlock pin
-
-#else
-    //Initializing serial printing for debugging
-    Serial.begin(9600);
+#ifdef PRODUCTION_FLIGHT_MODE    
+    Serial.println("\n\n=== PRODUCTION_FLIGHT_MODE INITIALIZED ===");    
+#elif TEST_STATE_MACHINE_MODE
+    Serial.println("\n\n=== TEST_STATE_MACHINE_MODE INITIALIZED ===");
+#elif TEST_PID_AND_CALIBRATION_MODE
+    Serial.println("\n\n=== TEST_PID_AND_CALIBRATION_MODE INITIALIZED ===");
 #endif
 }
 
@@ -184,12 +156,12 @@ void loop() {
     // Advance the test setpoint every fixed interval to verify controller response.
     if (currentTime - lastSwitchTime >= interval) {
         lastSwitchTime = currentTime;
-        setpoint_index = (setpoint_index + 1) % setpoints.size();
+        setpointIndex = (setpointIndex + 1) % numSetpoints;
     }
     
     // Run the PID controller against the current orientation setpoint.
     control.PID(
-        setpoints[setpoint_index],
+        setpoints[setpointIndex],
         data.oriZ
     );
 
@@ -236,10 +208,10 @@ void loop() {
 
     // Display the current control error and active setpoint.
     Serial.println("Control error:");
-    error = control.get_error();
+    float error = control.get_error();
     Serial.println(error);
     Serial.print("Current setpoint: ");
-    Serial.println(setpoints[setpoint_index]);
+    Serial.println(setpoints[setpointIndex]);
 
     // Use the onboard LED to indicate whether the controller is within tolerance.
     if (abs(error) < 5.0f) {
@@ -407,7 +379,7 @@ void loop() {
     Serial.println(state_input_data.oriZ);
 
     Serial.print("Current roll setpoint: ");
-    Serial.println(setpoints[setpoint_index]);
+    Serial.println(setpoints[setpointIndex]);
 
     Serial.println("--------------------");
 

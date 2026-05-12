@@ -4,10 +4,10 @@ ControlHardware::ControlHardware() {}
 
 bool ControlHardware::Initialize() {
     // NOTE: Assumes servo pins are defined in constants.h
-    canard_servo1_.attach(constants::kServo1Pin);
-    canard_servo2_.attach(constants::kServo2Pin);
-    canard_servo3_.attach(constants::kServo3Pin);
-    canard_servo4_.attach(constants::kServo4Pin);
+    servo1_.attach(constants::kServo1Pin);
+    servo2_.attach(constants::kServo2Pin);
+    servo3_.attach(constants::kServo3Pin);
+    servo4_.attach(constants::kServo4Pin);
 
     initialisationAnimation();
 
@@ -43,8 +43,8 @@ void ControlHardware::SetCanardAngle(float pid_angle_degrees) {
             constants::kServoMaxAngle);
 
     // Apply the calculated angle to all four canard servos
-    canard_servo1_.write(servo_angle + constants::kServoTrim1);
-    canard_servo2_.write(servo_angle + constants::kServoTrim2);
-    canard_servo3_.write(servo_angle + constants::kServoTrim3);
-    canard_servo4_.write(servo_angle + constants::kServoTrim4);
+    servo1_.write(servo_angle + constants::kServoTrim1);
+    servo2_.write(servo_angle + constants::kServoTrim2);
+    servo3_.write(servo_angle + constants::kServoTrim3);
+    servo4_.write(servo_angle + constants::kServoTrim4);
 }

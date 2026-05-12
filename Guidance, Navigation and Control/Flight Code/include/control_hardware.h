@@ -28,10 +28,10 @@ class ControlHardware {
   void initialisationAnimation(); // Optional: Visual servo test pattern for pre-flight checks
 
  private:
-  Servo canard_servo1_;  /**< Servo for canard 1 */
-  Servo canard_servo2_;  /**< Servo for canard 2 */
-  Servo canard_servo3_;  /**< Servo for canard 3 */
-  Servo canard_servo4_;  /**< Servo for canard 4 */
+  Servo servo1_;  /**< Servo for canard 1 */
+  Servo servo2_;  /**< Servo for canard 2 */
+  Servo servo3_;  /**< Servo for canard 3 */
+  Servo servo4_;  /**< Servo for canard 4 */
 };
 
 #endif  // FLIGHT_CODE_INCLUDE_CONTROL_HARDWARE_H_
