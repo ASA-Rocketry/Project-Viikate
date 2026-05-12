@@ -102,13 +102,15 @@ void Control::PID(float set_angle_deg, float current_angle_deg) {
     // Combine PID terms for raw output
     float output = p_term + i_term + d_term;
 
-    Serial.print("PID Values: ");
-    Serial.print("P: ");
-    Serial.print(p_term);
-    Serial.print(" I: ");
-    Serial.print(i_term);
-    Serial.print(" D: ");
-    Serial.println(d_term);
+    // Debugging output for PID terms and raw output before saturation
+    #ifdef TEST_PID_AND_CALIBRATION_MODE
+        Serial.print("PID | P:");
+        Serial.print(p_term);
+        Serial.print(" I:");
+        Serial.print(i_term);
+        Serial.print(" D:");
+        Serial.println(d_term);
+    #endif
 
     // Apply output saturation to prevent actuator damage (output range [-30, 30] degrees)
     float saturated_output = constrain(output, min_output, max_output);
