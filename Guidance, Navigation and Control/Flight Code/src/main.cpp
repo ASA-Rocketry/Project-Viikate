@@ -167,6 +167,7 @@ void loop() {
 
     // Start simulation once launchpad state is reached.
     if ((state_machine.GetState() == State::kLaunchpad) && !simulation_started) {
+        delay(5000); // Short delay to ensure stable transition before starting simulation
         simulation_started = true;
         Serial.println("Simulation started");
     }
@@ -204,7 +205,7 @@ void loop() {
         }
 
         /// ### kCoast ###
-        // In the coast phase, we perform a roll maneuver to 90 degrees and back to neutral.
+        // In the coast phase, we perform a roll maneuver to 180 degrees and back to neutral.
         case State::kCoast: {
             float coastSetpoint = 0.0f;
 
@@ -215,8 +216,8 @@ void loop() {
                 coastStartTime = currentTime;
             }
 
-            if ((currentTime - coastStartTime) < 2000) {
-                coastSetpoint = 90.0f;
+            if ((currentTime - coastStartTime) < 4000) {
+                coastSetpoint = 180.0f;
             }
             else {
                 coastSetpoint = 0.0f;
