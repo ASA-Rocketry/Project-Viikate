@@ -1,11 +1,8 @@
 #include <ArduinoJson.h>
-
 #include <cstddef>
 #include <vector>
-
-#include "constants.h"
-
 #include <SD.h>
+#include "constants.h"
 
 void FlightData::SerializeJson(
     char *outputBuffer,
@@ -30,7 +27,6 @@ void FlightData::SerializeJson(
     doc["heading"] = this->heading;
     doc["accelMagnitude"] = this->accelMagnitude;
     doc["rbfRemoved"] = this->rbfRemoved;
-
     doc["kZProportional"] = constants::kZProportional;
     doc["kZIntegrator"] = constants::kZIntegrator;
     doc["kZDerivative"] = constants::kZDerivative;

@@ -1,16 +1,13 @@
-#include "sensors.h"
-
 #include <BME280I2C.h>
 #include <SPI.h>
 #include <SparkFun_MMC5983MA_Arduino_Library.h>
-
 #include <cstdint>
-
 #include "Arduino.h"
 #include "ISM330DHCXSensor.h"
 #include "Wire.h"
 #include "constants.h"
 #include "pose.h"
+#include "sensors.h"
 
 #define SAMPLE_THRESHOLD 5
 #define SEA_LEVEL_PRESSURE 101300.0  // Standard sea level pressure in Pa
@@ -80,7 +77,6 @@ FlightData Sensors::ReadFlightData() {
     flight_data.timeMs = millis();
 
     uint16_t samples;
-
     IMU_Data_ imu_data;
 
     double correctedAX, correctedAY, correctedAZ, correctedGX, correctedGY,
@@ -275,8 +271,7 @@ Sensors::_computeInitialState(const Sensors::IMU_Data_ &data) {
 void Sensors::initialiseFilters() {
     //creating kalman filter for accelerometer
 
-    const int acc_n =
-        9;  // states:       [position, velocity, acceleration for x, y and z axis]
+    const int acc_n = 9;  // states:       [position, velocity, acceleration for x, y and z axis]
     const int acc_m = 3;  // measurements: [acceleration for x, y and z axis]
 
     Eigen::MatrixXd acc_A(acc_n, acc_n);  // state transition
@@ -338,10 +333,8 @@ void Sensors::initialiseFilters() {
     Eigen::VectorXd acc_x0 = initial_state_.linear.cast<double>();
     AccKalman.init(acc_A, acc_Q, acc_R, acc_H, acc_P, 0.0, acc_x0);
 
-    const int gyr_n =
-        6;  // states:       [roll(°), roll_rate(°/s), pitch(°), pitch_rate(°/s), yaw(°), yaw_rate(°/s)]
-    const int gyr_m =
-        3;  // measurements: [roll_rate(°/s), pitch_rate(°/s), yaw_rate(°/s)]
+    const int gyr_n = 6;  // states:       [roll(°), roll_rate(°/s), pitch(°), pitch_rate(°/s), yaw(°), yaw_rate(°/s)]
+    const int gyr_m = 3;  // measurements: [roll_rate(°/s), pitch_rate(°/s), yaw_rate(°/s)]
 
     Eigen::MatrixXd gyr_A(gyr_n, gyr_n);
     Eigen::MatrixXd gyr_Q(gyr_n, gyr_n);

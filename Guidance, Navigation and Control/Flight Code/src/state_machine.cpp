@@ -1,7 +1,8 @@
+#include <Arduino.h>
 #include "state_machine.h"
 #include "control.h"
 #include "constants.h"
-#include <Arduino.h>
+
 
 const char* StateToString(State state) {
     switch (state) {
@@ -21,9 +22,7 @@ StateMachine::StateMachine(DataLogger& data_logger, Control& control): data_logg
     active_state = State::kCalibration;
 }
 
-State StateMachine::GetState() {
-    return active_state;
-}
+State StateMachine::GetState() { return active_state; }
 
 bool StateMachine::IdleCheck(const FlightData& data) const{
     if (data_logger_.IsInitialized() /*&& sensors_.IsInitialized()*/ && control_.IsInitialized()) {
@@ -75,8 +74,7 @@ bool StateMachine::RDDCheck(const FlightData& data) const{
 }
 
 bool StateMachine::LandCheck(const FlightData& data) const{
-    if (((data.verticalVelocity > -1.0f && data.verticalVelocity < 1.0f)) &&
-        (data.accelMagnitude < 1.0f)) {
+    if ((abs(data.verticalVelocity) < 1.0f) && (data.accelMagnitude < 1.0f)) { // TODO: Probably needs a time based check as well?
         return true;
     } else {
         return false;
@@ -136,28 +134,36 @@ void StateMachine::OnEnter(State new_state, unsigned long time_ms) {
     
     switch(new_state) {
         case State::kCalibration:
+            data_logger_.LogEvent(LogType::kInfo, "State: Calibration");
             break;
         
         case State::kIdle:
+            data_logger_.LogEvent(LogType::kInfo, "State: Idle");
             break;
 
         case State::kLaunchpad:
+            data_logger_.LogEvent(LogType::kInfo, "State: Launchpad");
             break;
 
         case State::kLiftoff:
+            data_logger_.LogEvent(LogType::kInfo, "State: Liftoff");
             liftoff_time_ms = time_ms;
             break;
 
         case State::kCoast:
+            data_logger_.LogEvent(LogType::kInfo, "State: Coast");
             break;
 
         case State::kApogee:
+            data_logger_.LogEvent(LogType::kInfo, "State: Apogee");
             break;
 
         case State::kRDD:
+            data_logger_.LogEvent(LogType::kInfo, "State: Recovery");
             break;
 
         case State::kGround:
+            data_logger_.LogEvent(LogType::kInfo, "State: Ground");
             delay(2000); // Wait for 2 seconds to ensure all flight data is logged before closing files
             data_logger_.Close(); // Close SD card
             break;

@@ -1,22 +1,17 @@
 #include "control.h"
-
 #include "constants.h"
-#include "control_hardware.h"  // Include for ControlHardware class
+#include "control_hardware.h"
 
 /**
  * @brief Constructs a Control object.
  * Initializes member variables to safe defaults.
  */
-Control::Control() :
-    previous_error_(0.0f),
-    integral_error_(0.0f),
-    previous_time_ms_(0),
-    control_hardware_() {}
+Control::Control() : previous_error_(0.0f), integral_error_(0.0f), previous_time_ms_(0), control_hardware_() {}
 
 /**
  * @brief Initializes the control system.
  * Resets PID state variables and initializes hardware.
- * @return true if initialization successful, false otherwise.
+ * @return True if initialization successful, False otherwise.
  */
 bool Control::Initialize() {
     initialized_ = false;
@@ -32,17 +27,17 @@ bool Control::Initialize() {
         Serial.println("Failed to initialize ControlHardware!");
         return false;
     }
-
     Serial.println("Control initialized!");
 
     initialized_ = true;
     return true;
 }
 
-bool Control::IsInitialized() const {
-    return initialized_;
-}
 
+/** @brief Checks if the control system is initialized.
+ * @return True if initialization successful, false otherwise.
+ */
+bool Control::IsInitialized() const { return initialized_; }
 
 /**
  * @brief Executes the PID control loop.
@@ -61,17 +56,13 @@ void Control::PID(float set_angle_deg, float current_angle_deg) {
         integral_error_ = 0.0f;  
     }
 
-    // Calculate angular error
-    float angular_error = set_angle_deg - current_angle_deg;
-
-    // Maximum and Minimum output values from constants.h.
+    float angular_error = set_angle_deg - current_angle_deg; // Error = setpoint - current measured angle
     float max_output = constants::kMaxControlAngle;
     float min_output = constants::kMinControlAngle;
 
     // Calculate time delta for derivative and integral terms
     unsigned long current_time_ms = millis();
-    float dt = (current_time_ms - previous_time_ms_)
-        * 0.001f;  // Convert ms to seconds
+    float dt = (current_time_ms - previous_time_ms_) * 0.001f;  // Convert ms to seconds
 
     // Prevent division by zero and ensure minimum dt for numerical stability
     if (dt <= 0.0f) {
@@ -136,6 +127,4 @@ void Control::PID(float set_angle_deg, float current_angle_deg) {
 }
 
 // Accessor for testing and debugging (wrapper around ControlHardware)
-void Control::SetCanardAngle(float angle) {
-    control_hardware_.SetCanardAngle(angle);
-}
+void Control::SetCanardAngle(float angle) { control_hardware_.SetCanardAngle(angle); }
