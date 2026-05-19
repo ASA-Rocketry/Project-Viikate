@@ -26,6 +26,8 @@ class Sensors {
     bool Initialize();
     FlightData ReadFlightData();
 
+    bool IsInitialized() const;
+
   private:
     // flight data
     FlightData flight_data;
@@ -82,6 +84,8 @@ class Sensors {
     DataLogger &data_logger_;
     Eigen::VectorXd AccKalmanUpdate(int32_t ax, int32_t ay, int32_t az);
     Eigen::VectorXd GyroKalmanUpdate(int32_t gx, int32_t gy, int32_t gz);
+
+    bool initialized_ = false;
 };
 
 #endif  // FLIGHT_CODE_INCLUDE_SENSORS_H_

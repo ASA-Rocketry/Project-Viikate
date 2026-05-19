@@ -8,6 +8,7 @@
 #include "constants.h"
 #include "pose.h"
 #include "sensors.h"
+#include "debug_prints.h"
 
 #define SAMPLE_THRESHOLD 5
 #define SEA_LEVEL_PRESSURE 101300.0  // Standard sea level pressure in Pa
@@ -154,6 +155,9 @@ FlightData Sensors::ReadFlightData() {
  * @brief Initializes the sensors, including I2C and IMU.
  */
 bool Sensors::Initialize() {
+    // Reset initialization state before attempting setup
+    initialized_ = false;
+
     Wire.begin();  // Begin I2C transmission
 
     SPI.begin();
@@ -161,53 +165,60 @@ bool Sensors::Initialize() {
     initializeMagnetometer();
     initaliseBarometer();
 
-    Serial.println("Sensors initialized.");
-    Serial.println("=== Initial State ===");
+    DEBUG_PRINTLN("Sensors initialized.");
+    DEBUG_PRINTLN("=== Initial State ===");
 
-    Serial.println("Linear [position, velocity, acceleration]:");
-    Serial.print("  position:     ");
-    Serial.print(initial_state_.linear(0), 4);
-    Serial.println(" m");
-    Serial.print("  velocity:     ");
-    Serial.print(initial_state_.linear(1), 4);
-    Serial.println(" m/s");
-    Serial.print("  acceleration (z): ");
-    Serial.print(initial_state_.linear(2), 4);
-    Serial.println(" m/s^2");
+    DEBUG_PRINTLN("Linear [position, velocity, acceleration]:");
+    DEBUG_PRINT("  position:     ");
+    DEBUG_PRINT(initial_state_.linear(0), 4);
+    DEBUG_PRINTLN(" m");
+    DEBUG_PRINT("  velocity:     ");
+    DEBUG_PRINT(initial_state_.linear(1), 4);
+    DEBUG_PRINTLN(" m/s");
+    DEBUG_PRINT("  acceleration (z): ");
+    DEBUG_PRINT(initial_state_.linear(2), 4);
+    DEBUG_PRINTLN(" m/s^2");
 
-    Serial.println("Angular [orientation, angular_velocity]:");
-    Serial.println("  orientation (X, Y, Z ):      ");
-    Serial.println(initial_state_.angular(0), 4);
-    Serial.println(initial_state_.angular(1), 4);
-    Serial.println(initial_state_.angular(2), 4);
-    Serial.println(" degree");
-    Serial.println("  angular_velocity: ");
-    Serial.println(initial_state_.angular(3), 4);
-    Serial.println(initial_state_.angular(4), 4);
-    Serial.println(initial_state_.angular(5), 4);
-    Serial.println(" degree/s");
+    DEBUG_PRINTLN("Angular [orientation, angular_velocity]:");
+    DEBUG_PRINTLN("  orientation (X, Y, Z ):      ");
+    DEBUG_PRINTLN(initial_state_.angular(0), 4);
+    DEBUG_PRINTLN(initial_state_.angular(1), 4);
+    DEBUG_PRINTLN(initial_state_.angular(2), 4);
+    DEBUG_PRINTLN(" degree");
+    DEBUG_PRINTLN("  angular_velocity: ");
+    DEBUG_PRINTLN(initial_state_.angular(3), 4);
+    DEBUG_PRINTLN(initial_state_.angular(4), 4);
+    DEBUG_PRINTLN(initial_state_.angular(5), 4);
+    DEBUG_PRINTLN(" degree/s");
 
     calibrateIMU();
 
-    Serial.println("====================");
+    DEBUG_PRINTLN("====================");
 
     initialiseFilters();
 
     //delay(5000);
 
-    Serial.println("Sensors initialized!");
+    // Mark subsystem as successfully initialized
+    initialized_ = true;
+
+    DEBUG_PRINTLN("Sensors initialized!");
     return true;
+}
+
+bool Sensors::IsInitialized() const {
+    return initialized_;
 }
 
 void Sensors::initialize_IMU() {
     if (!imu.begin()) {
         data_logger_.LogEvent(LogType::kCritical, "IMU INIT FAILURE");
         imu_initialized = false;
-        Serial.println("ISM330DHCX IMU initialization unsuccessful.");
+        DEBUG_PRINTLN("ISM330DHCX IMU initialization unsuccessful.");
     } else {
         data_logger_.LogEvent(LogType::kInfo, "IMU INITIALIZED");
         imu_initialized = true;
-        Serial.println("ISM330DHCX IMU initialized successfully.");
+        DEBUG_PRINTLN("ISM330DHCX IMU initialized successfully.");
     }
     imu.ACC_SetFullScale(16);
     imu.GYRO_SetFullScale(2000);
@@ -219,7 +230,7 @@ void Sensors::initialize_IMU() {
     imu.ACC_Enable();
     imu.GYRO_Enable();
 
-    Serial.println("Computing initial state from IMU readings...");
+    DEBUG_PRINTLN("Computing initial state from IMU readings...");
 
     delay(100);  // wait for IMU buffer to fill up with initial readings
 
@@ -399,7 +410,7 @@ void Sensors::initialiseFilters() {
 }
 
 void Sensors::calibrateIMU() {
-    Serial.println("IMU calibration starting — hold still for 5 seconds...");
+    DEBUG_PRINTLN("IMU calibration starting — hold still for 5 seconds...");
 
     // Accumulate samples over 5 seconds
     unsigned long calibration_start = millis();
@@ -429,7 +440,7 @@ void Sensors::calibrateIMU() {
     }
 
     if (sample_count == 0) {
-        Serial.println("Calibration failed — no samples received.");
+        DEBUG_PRINTLN("Calibration failed — no samples received.");
         return;
     }
 
@@ -453,31 +464,31 @@ void Sensors::calibrateIMU() {
     Sensors::initial_state_.angular_rate_offsets[2] =
         -gyr_mean(2);  // yaw_rate   offset
 
-    Serial.print("IMU calibration complete (");
-    Serial.print(sample_count);
-    Serial.println(" samples).");
-    Serial.println("Offsets:");
-    Serial.print("  linear (pos, vel, acc): ");
-    Serial.print(Sensors::initial_state_.linear_offsets[0], 4);
-    Serial.print(", ");
-    Serial.print(Sensors::initial_state_.linear_offsets[1], 4);
-    Serial.print(", ");
-    Serial.print(Sensors::initial_state_.linear_offsets[2], 4);
-    Serial.println(" m/s^2");
-    Serial.print("  angular (roll, pitch, yaw): ");
-    Serial.print(Sensors::initial_state_.angular_offsets[0], 4);
-    Serial.print(", ");
-    Serial.print(Sensors::initial_state_.angular_offsets[1], 4);
-    Serial.print(", ");
-    Serial.print(Sensors::initial_state_.angular_offsets[2], 4);
-    Serial.println(" deg");
-    Serial.print("  angular rate (roll, pitch, yaw): ");
-    Serial.print(Sensors::initial_state_.angular_rate_offsets[0], 4);
-    Serial.print(", ");
-    Serial.print(Sensors::initial_state_.angular_rate_offsets[1], 4);
-    Serial.print(", ");
-    Serial.print(Sensors::initial_state_.angular_rate_offsets[2], 4);
-    Serial.println(" deg/s");
+    DEBUG_PRINT("IMU calibration complete (");
+    DEBUG_PRINT(sample_count);
+    DEBUG_PRINTLN(" samples).");
+    DEBUG_PRINTLN("Offsets:");
+    DEBUG_PRINT("  linear (pos, vel, acc): ");
+    DEBUG_PRINT(Sensors::initial_state_.linear_offsets[0], 4);
+    DEBUG_PRINT(", ");
+    DEBUG_PRINT(Sensors::initial_state_.linear_offsets[1], 4);
+    DEBUG_PRINT(", ");
+    DEBUG_PRINT(Sensors::initial_state_.linear_offsets[2], 4);
+    DEBUG_PRINTLN(" m/s^2");
+    DEBUG_PRINT("  angular (roll, pitch, yaw): ");
+    DEBUG_PRINT(Sensors::initial_state_.angular_offsets[0], 4);
+    DEBUG_PRINT(", ");
+    DEBUG_PRINT(Sensors::initial_state_.angular_offsets[1], 4);
+    DEBUG_PRINT(", ");
+    DEBUG_PRINT(Sensors::initial_state_.angular_offsets[2], 4);
+    DEBUG_PRINTLN(" deg");
+    DEBUG_PRINT("  angular rate (roll, pitch, yaw): ");
+    DEBUG_PRINT(Sensors::initial_state_.angular_rate_offsets[0], 4);
+    DEBUG_PRINT(", ");
+    DEBUG_PRINT(Sensors::initial_state_.angular_rate_offsets[1], 4);
+    DEBUG_PRINT(", ");
+    DEBUG_PRINT(Sensors::initial_state_.angular_rate_offsets[2], 4);
+    DEBUG_PRINTLN(" deg/s");
 
     AccKalman.reset();
     // GyroKalman.reset();
@@ -487,11 +498,11 @@ void Sensors::initializeMagnetometer() {
     if (!mag.begin(Wire)) {
         data_logger_.LogEvent(LogType::kCritical, "MAGNETOMETER INIT FAILURE");
         mag_initialized = false;
-        Serial.println("MMC5983MA magnetometer initialization unsuccessful.");
+        DEBUG_PRINTLN("MMC5983MA magnetometer initialization unsuccessful.");
     } else {
         data_logger_.LogEvent(LogType::kInfo, "MAGNETOMETER INITIALIZED");
         mag_initialized = true;
-        Serial.println("MMC5983MA magnetometer initialized successfully.");
+        DEBUG_PRINTLN("MMC5983MA magnetometer initialized successfully.");
     }
     mag.softReset();
     mag.setFilterBandwidth(OUTPUT_DATA_RATE);  //set filter bandwidth to 100Hz
@@ -506,11 +517,11 @@ void Sensors::initaliseBarometer() {
     if (!bme.begin()) {
         data_logger_.LogEvent(LogType::kCritical, "BAROMETER INIT FAILURE");
         bme_initialized = false;
-        Serial.println("BME280 barometer initialization unsuccessful.");
+        DEBUG_PRINTLN("BME280 barometer initialization unsuccessful.");
     } else {
         data_logger_.LogEvent(LogType::kInfo, "BAROMETER INITIALIZED");
         bme_initialized = true;
-        Serial.println("BME280 barometer initialized successfully.");
+        DEBUG_PRINTLN("BME280 barometer initialized successfully.");
     }
 }
 

@@ -4,6 +4,7 @@
 #include "constants.h"
 #include "data_logger.h"
 #include "control.h"
+#include "sensors.h"
 
 /**
  * @file state_machine.h
@@ -44,7 +45,7 @@ public:
      *
      * Initializes the active state to kIdle.
      */
-    StateMachine(DataLogger& data_logger, Control& control);
+    StateMachine(DataLogger& data_logger, Sensors& sensors, Control& control);
 
     /**
      * @brief Update the StateMachine instance with new flight data.
@@ -157,6 +158,7 @@ private:
     void OnEnter(State newState, unsigned long timeMs);
 
     DataLogger& data_logger_; 
+    Sensors& sensors_;
     Control& control_;
 };
 

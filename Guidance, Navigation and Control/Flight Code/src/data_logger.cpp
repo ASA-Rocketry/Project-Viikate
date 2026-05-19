@@ -5,6 +5,7 @@
 #include <SPI.h>
 
 #include "constants.h"
+#include "debug_prints.h"
 
 DataLogger::DataLogger() {}
 
@@ -15,7 +16,7 @@ bool DataLogger::Initialize() {
 
     // Initialize SD card interface
     if (!SD.begin(BUILTIN_SDCARD)) {
-    Serial.println("SD.begin failed");
+    DEBUG_PRINTLN("SD.begin failed");
     return false;
     }
 
@@ -36,7 +37,7 @@ bool DataLogger::Initialize() {
     
     // Check if the file was opened successfully
     if (!flight_data_file_) {
-    Serial.println("ERROR: Failed to open flight data file");
+    DEBUG_PRINTLN("ERROR: Failed to open flight data file");
     return false;
     }
 
@@ -56,7 +57,7 @@ bool DataLogger::Initialize() {
 
     if (!event_data_file_) {
 
-        Serial.println("ERROR: Failed to open event log file");
+        DEBUG_PRINTLN("ERROR: Failed to open event log file");
 
         // Clean up already-opened flight file
         flight_data_file_.close();
@@ -77,7 +78,7 @@ bool DataLogger::Initialize() {
     // Mark subsystem as successfully initialized
     initialized_ = true;
 
-    Serial.println("DataLogger initialized successfully!");
+    DEBUG_PRINTLN("DataLogger initialized successfully!");
 
     return true;
 }
