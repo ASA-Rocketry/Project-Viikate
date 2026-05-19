@@ -1,6 +1,7 @@
 #include "control.h"
 #include "constants.h"
 #include "control_hardware.h"
+#include "debug_prints.h"
 
 /**
  * @brief Constructs a Control object.
@@ -24,10 +25,10 @@ bool Control::Initialize() {
     // Initialize servo hardware (attaches pins, calibrates to 90°)
     // NOTE: Assumes control_hardware_ member exists and has Initialize() method
     if (!control_hardware_.Initialize()) {
-        Serial.println("Failed to initialize ControlHardware!");
+        DEBUG_PRINTLN("Failed to initialize ControlHardware!");
         return false;
     }
-    Serial.println("Control initialized!");
+    DEBUG_PRINTLN("Control initialized!");
 
     initialized_ = true;
     return true;
@@ -95,12 +96,12 @@ void Control::PID(float set_angle_deg, float current_angle_deg) {
 
     // Debugging output for PID terms and raw output before saturation
     #ifdef TEST_PID_AND_CALIBRATION_MODE
-        Serial.print("PID | P:");
-        Serial.print(p_term);
-        Serial.print(" I:");
-        Serial.print(i_term);
-        Serial.print(" D:");
-        Serial.println(d_term);
+        DEBUG_PRINT("PID | P:");
+        DEBUG_PRINT(p_term);
+        DEBUG_PRINT(" I:");
+        DEBUG_PRINT(i_term);
+        DEBUG_PRINT(" D:");
+        DEBUG_PRINTLN(d_term);
     #endif
 
     // Apply output saturation to prevent actuator damage (output range [-30, 30] degrees)

@@ -2,6 +2,7 @@
 #include "pose.h"
 #include <Arduino.h>
 #include <ArduinoEigen.h>
+#include "debug_prints.h"
 
 KalmanFilter::KalmanFilter(double dt,
                              const Eigen::MatrixXd& A,
@@ -55,7 +56,7 @@ void KalmanFilter::init() {
 
 void KalmanFilter::update(const Eigen::VectorXd& z) {
     if (!initialised) {
-        Serial.println("KalmanFilter not initialized!");
+        DEBUG_PRINTLN("KalmanFilter not initialized!");
         return;
     }
 

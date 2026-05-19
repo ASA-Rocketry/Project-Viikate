@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "constants.h"
+#include "debug_prints.h"
 
 // Packet framing (16-byte magic + 4-byte length)
 static const size_t HEADER_SIZE = 16 + 4;

@@ -18,27 +18,7 @@
 #include "flight_data.h"
 #include "sensors.h"
 #include "state_machine.h"
-
-#ifdef PRODUCTION_FLIGHT_MODE
-    #define MODE_NAME "PRODUCTION_FLIGHT_MODE"
-#elif defined(TEST_STATE_MACHINE_MODE)
-    #define MODE_NAME "TEST_STATE_MACHINE_MODE"
-    #define ENABLE_TEST_PRINTS
-#elif defined(TEST_PID_AND_CALIBRATION_MODE)
-    #define MODE_NAME "TEST_PID_AND_CALIBRATION_MODE"
-    #define ENABLE_TEST_PRINTS
-#endif
-
-#ifdef ENABLE_TEST_PRINTS
-    #define DEBUG_BEGIN(baud) Serial.begin(baud)
-    #define DEBUG_PRINT(x) Serial.print(x)
-    #define DEBUG_PRINTLN(x) Serial.println(x)
-#else // Do nothing if not testing
-    #define DEBUG_BEGIN(baud) 
-    #define DEBUG_PRINT(x)
-    #define DEBUG_PRINTLN(x)
-#endif
-
+#include "debug_prints.h"
 
 // Global subsystem instances used throughout the flight control loop.
 DataLogger data_logger;
@@ -50,7 +30,7 @@ float error; // Control error used for status reporting and LED state.
 constexpr float setpoints[] = {0.0f, 90.0f}; // Predefined setpoints for PID testing (0° and 90° roll).
 
 #if defined(PRODUCTION_FLIGHT_MODE) || defined(TEST_STATE_MACHINE_MODE)
-    StateMachine state_machine(data_logger, control); // Only needed in production flight mode and state machine testing mode
+    StateMachine state_machine(data_logger, sensors, control); // Only needed in production flight mode and state machine testing mode
     bool coastManeuverStarted = false;
     unsigned long coastStartTime = 0;
 #endif
@@ -100,20 +80,20 @@ void setup() {
     delay(1000);  // Give serial time to initialize
 #endif
 
-Serial.println("\n\n=== " MODE_NAME " STARTING ===");
+DEBUG_PRINTLN("\n\n=== " MODE_NAME " STARTING ===");
 
     // Initialize core subsystems in a safe order.
     // Data logger first so that any failures during sensors/control init can be recorded.
     if (!data_logger.Initialize()) {
-        Serial.println("Failed to initialize DataLogger!");
+        DEBUG_PRINTLN("Failed to initialize DataLogger!");
         return;
     }
     if (!sensors.Initialize()) {
-        Serial.println("Failed to initialize Sensors!");
+        DEBUG_PRINTLN("Failed to initialize Sensors!");
         return;
     }
     if (!control.Initialize()) {
-        Serial.println("Failed to initialize Control!");
+        DEBUG_PRINTLN("Failed to initialize Control!");
         return;
     }
     data_logger.LogEvent(LogType::kInfo, "SETUP COMPLETE");
@@ -124,7 +104,7 @@ Serial.println("\n\n=== " MODE_NAME " STARTING ===");
     readSimulatedData(); // Function in flightData
 #endif 
 
-Serial.println("\n\n=== " MODE_NAME " INITIALIZED ===");
+DEBUG_PRINTLN("\n\n=== " MODE_NAME " INITIALIZED ===");
 }
 /**
  * @brief Main Arduino loop that executes the flight control cycle.
@@ -144,7 +124,7 @@ void loop() {
     if ((state_machine.GetState() == State::kLaunchpad) && !simulation_started) {
         //delay(30000); // Short delay to ensure stable transition before starting simulation
         simulation_started = true;
-        Serial.println("Simulation started");
+        DEBUG_PRINTLN("Simulation started");
     }
 
     if (simulation_started) {
@@ -174,7 +154,22 @@ void loop() {
                 coastManeuverStarted = true;
                 coastStartTime = currentTime;
             }
-            coastSetpoint = ((currentTime - coastStartTime) < 4000) ? 180.0f : 0.0f; // Perform a roll maneuver to 180 degrees and back to neutral.
+
+            const unsigned long elapsedTime = currentTime - coastStartTime;
+
+            // Hold 0° for the first 2 seconds.
+            // Command 180° for the next 4 seconds.
+            // Return to 0° afterwards.
+            if (elapsedTime < 2000) {
+                coastSetpoint = 0.0f;
+            }
+            else if (elapsedTime < 4000) {
+                coastSetpoint = 90.0f;
+            }
+            else {
+                coastSetpoint = 0.0f;
+            }
+            
             control.PID(coastSetpoint, inputData.oriZ);
             break;
         }
@@ -196,25 +191,25 @@ void loop() {
     }
 
     // Debug output
-    Serial.print("Current state: ");
-    Serial.println(StateToString(currentState));
-    Serial.print("Time (s): ");
-    Serial.println(currentTime / 1000.0f);
-    Serial.print("Altitude (m): ");
-    Serial.println(inputData.altitude);
-    Serial.print("Vertical velocity (m/s): ");
-    Serial.println(inputData.verticalVelocity);
-    Serial.print("Vertical acceleration (m/s²): ");
-    Serial.println(inputData.accZ);
-    Serial.print("Total acceleration (m/s²): ");
-    Serial.println(inputData.accelMagnitude);
-    Serial.print("RBF Removed: ");
-    Serial.println(inputData.rbfRemoved);
-    Serial.print("Orientation Z (live): ");
-    Serial.println(inputData.oriZ);
-    Serial.print("Current roll setpoint: ");
-    Serial.println(coastSetpoint);
-    Serial.println("--------------------");
+    DEBUG_PRINT("Current state: ");
+    DEBUG_PRINTLN(StateToString(currentState));
+    DEBUG_PRINT("Time (s): ");
+    DEBUG_PRINTLN(currentTime / 1000.0f);
+    DEBUG_PRINT("Altitude (m): ");
+    DEBUG_PRINTLN(inputData.altitude);
+    DEBUG_PRINT("Vertical velocity (m/s): ");
+    DEBUG_PRINTLN(inputData.verticalVelocity);
+    DEBUG_PRINT("Vertical acceleration (m/s²): ");
+    DEBUG_PRINTLN(inputData.accZ);
+    DEBUG_PRINT("Total acceleration (m/s²): ");
+    DEBUG_PRINTLN(inputData.accelMagnitude);
+    DEBUG_PRINT("RBF Removed: ");
+    DEBUG_PRINTLN(inputData.rbfRemoved);
+    DEBUG_PRINT("Orientation Z (live): ");
+    DEBUG_PRINTLN(inputData.oriZ);
+    DEBUG_PRINT("Current roll setpoint: ");
+    DEBUG_PRINTLN(coastSetpoint);
+    DEBUG_PRINTLN("--------------------");
 #endif
 
 #if defined(TEST_PID_AND_CALIBRATION_MODE)
@@ -232,52 +227,52 @@ void loop() {
     control.PID(currentSetpoint, inputData.oriZ);
 
     // Print the current sensor and control state for local debugging.
-    Serial.print("Altitude: ");
-    Serial.println(inputData.altitude);
-    Serial.print("Vertical Velocity: ");
-    Serial.println(inputData.verticalVelocity);
-    Serial.print("AccelZ: ");
-    Serial.println(inputData.accZ);
-    Serial.print("RotZ: ");
-    Serial.println(inputData.rotZ);
-    Serial.print("AccelMagnitude: ");
-    Serial.println(inputData.accelMagnitude);
-    Serial.print("RBF Removed: ");
-    Serial.println(inputData.rbfRemoved);
-    Serial.print("Acc (x, y, z): ");
-    Serial.print(inputData.accX);
-    Serial.print(", ");
-    Serial.print(inputData.accY);
-    Serial.print(", ");
-    Serial.println(inputData.accZ);
-    Serial.print("Gyro Angular Rate (x, y, z): ");
-    Serial.print(inputData.rotX);
-    Serial.print(", ");
-    Serial.print(inputData.rotY);
-    Serial.print(", ");
-    Serial.println(inputData.rotZ);
-    Serial.print("Orientation (x, y, z): ");
-    Serial.print(inputData.oriX);
-    Serial.print(", ");
-    Serial.print(inputData.oriY);
-    Serial.print(", ");
-    Serial.println(inputData.oriZ);
-    Serial.print("Mag: ");
-    Serial.print(inputData.magX);
-    Serial.print(", ");
-    Serial.print(inputData.magY);
-    Serial.print(", ");
-    Serial.println(inputData.magZ);
-    Serial.print("Heading: ");
-    Serial.println(inputData.heading);
-    Serial.println("--------------------");
+    DEBUG_PRINT("Altitude: ");
+    DEBUG_PRINTLN(inputData.altitude);
+    DEBUG_PRINT("Vertical Velocity: ");
+    DEBUG_PRINTLN(inputData.verticalVelocity);
+    DEBUG_PRINT("AccelZ: ");
+    DEBUG_PRINTLN(inputData.accZ);
+    DEBUG_PRINT("RotZ: ");
+    DEBUG_PRINTLN(inputData.rotZ);
+    DEBUG_PRINT("AccelMagnitude: ");
+    DEBUG_PRINTLN(inputData.accelMagnitude);
+    DEBUG_PRINT("RBF Removed: ");
+    DEBUG_PRINTLN(inputData.rbfRemoved);
+    DEBUG_PRINT("Acc (x, y, z): ");
+    DEBUG_PRINT(inputData.accX);
+    DEBUG_PRINT(", ");
+    DEBUG_PRINT(inputData.accY);
+    DEBUG_PRINT(", ");
+    DEBUG_PRINTLN(inputData.accZ);
+    DEBUG_PRINT("Gyro Angular Rate (x, y, z): ");
+    DEBUG_PRINT(inputData.rotX);
+    DEBUG_PRINT(", ");
+    DEBUG_PRINT(inputData.rotY);
+    DEBUG_PRINT(", ");
+    DEBUG_PRINTLN(inputData.rotZ);
+    DEBUG_PRINT("Orientation (x, y, z): ");
+    DEBUG_PRINT(inputData.oriX);
+    DEBUG_PRINT(", ");
+    DEBUG_PRINT(inputData.oriY);
+    DEBUG_PRINT(", ");
+    DEBUG_PRINTLN(inputData.oriZ);
+    DEBUG_PRINT("Mag: ");
+    DEBUG_PRINT(inputData.magX);
+    DEBUG_PRINT(", ");
+    DEBUG_PRINT(inputData.magY);
+    DEBUG_PRINT(", ");
+    DEBUG_PRINTLN(inputData.magZ);
+    DEBUG_PRINT("Heading: ");
+    DEBUG_PRINTLN(inputData.heading);
+    DEBUG_PRINTLN("--------------------");
 
     // Display the current control error and active setpoint.
-    Serial.println("Control error:");
+    DEBUG_PRINTLN("Control error:");
     float error = control.get_error();
-    Serial.println(error);
-    Serial.print("Current setpoint: ");
-    Serial.println(setpoints[setpointIndex]);
+    DEBUG_PRINTLN(error);
+    DEBUG_PRINT("Current setpoint: ");
+    DEBUG_PRINTLN(setpoints[setpointIndex]);
 
     // Use the onboard LED to indicate whether the controller is within tolerance.
     if (abs(error) < 5.0f) { 

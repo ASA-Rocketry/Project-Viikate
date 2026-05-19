@@ -1,4 +1,5 @@
 #include "control_hardware.h"
+#include "debug_prints.h"
 
 ControlHardware::ControlHardware() {}
 
@@ -11,7 +12,7 @@ bool ControlHardware::Initialize() {
 
     initialisationAnimation();
 
-    Serial.println("Control hardware initialized!");
+    DEBUG_PRINTLN("Control hardware initialized!");
 
     return true;
 }

@@ -3,6 +3,7 @@
 #include <vector>
 #include <SD.h>
 #include "constants.h"
+#include "debug_prints.h"
 
 void FlightData::SerializeJson(
     char *outputBuffer,
@@ -108,17 +109,17 @@ void readSimulatedData() {
 
     // Initialize the Teensy SD library for built-in SD card access.
     if (!SD.begin(BUILTIN_SDCARD)) {
-        Serial.println("SD card initialization failed!");
+        DEBUG_PRINTLN("SD card initialization failed!");
         return;
     }
-    Serial.println("SD card initialization successful!");
+    DEBUG_PRINTLN("SD card initialization successful!");
 
     File file = SD.open("simulated_flight_data_1.csv");
     if (!file) {
-        Serial.println("Failed to open CSV file: simulated_flight_data_1.csv");
+        DEBUG_PRINTLN("Failed to open CSV file: simulated_flight_data_1.csv");
         return;
     }
-    Serial.println("CSV file opened successfully: simulated_flight_data_1.csv");
+    DEBUG_PRINTLN("CSV file opened successfully: simulated_flight_data_1.csv");
 
     // Read the CSV file line-by-line and store only valid flight data rows.
     while (file.available()) {
@@ -130,7 +131,7 @@ void readSimulatedData() {
     }
     file.close();
 
-    Serial.println("Loaded " + String(simulatedData.size()) + " data points from CSV");
+    DEBUG_PRINTLN("Loaded " + String(simulatedData.size()) + " data points from CSV");
 }
 
 // Return the next simulated row on each call; preserve final state once the
@@ -146,7 +147,7 @@ FlightData getSimulatedFlightData() {
     }
 
     if (!simulated_end_printed) {
-        Serial.println("End of data!");
+        DEBUG_PRINTLN("End of data!");
         simulated_end_printed = true;
     }
 

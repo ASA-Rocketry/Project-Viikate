@@ -1,7 +1,10 @@
 #include <Arduino.h>
 #include "state_machine.h"
 #include "control.h"
+#include "data_logger.h"
+#include "sensors.h"
 #include "constants.h"
+#include "debug_prints.h"
 
 
 const char* StateToString(State state) {
@@ -18,14 +21,14 @@ const char* StateToString(State state) {
     }
 }
 
-StateMachine::StateMachine(DataLogger& data_logger, Control& control): data_logger_(data_logger), control_(control){
+StateMachine::StateMachine(DataLogger& data_logger, Sensors& sensors, Control& control): data_logger_(data_logger), sensors_(sensors), control_(control){
     active_state = State::kCalibration;
 }
 
 State StateMachine::GetState() { return active_state; }
 
 bool StateMachine::IdleCheck(const FlightData& data) const{
-    if (data_logger_.IsInitialized() /*&& sensors_.IsInitialized()*/ && control_.IsInitialized()) {
+    if (data_logger_.IsInitialized() && sensors_.IsInitialized() && control_.IsInitialized()) {
         return true;
     } else {
         return false;
@@ -118,10 +121,10 @@ State StateMachine::Update(const FlightData& data){
 
         if (next_state != active_state) {
 #ifdef TEST_STATE_MACHINE_MODE
-            Serial.print("Exiting state: ");
-            Serial.println(StateToString(active_state));
-            Serial.print("Entering state: ");
-            Serial.println(StateToString(next_state));
+            DEBUG_PRINT("Exiting state: ");
+            DEBUG_PRINTLN(StateToString(active_state));
+            DEBUG_PRINT("Entering state: ");
+            DEBUG_PRINTLN(StateToString(next_state));
 #endif
             OnEnter(next_state, data.timeMs);
             active_state = next_state;
