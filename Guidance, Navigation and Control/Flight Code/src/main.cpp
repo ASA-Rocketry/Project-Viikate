@@ -160,16 +160,9 @@ void loop() {
             // Hold 0° for the first 2 seconds.
             // Command 180° for the next 4 seconds.
             // Return to 0° afterwards.
-            if (elapsedTime < 2000) {
-                coastSetpoint = 0.0f;
-            }
-            else if (elapsedTime < 4000) {
-                coastSetpoint = 90.0f;
-            }
-            else {
-                coastSetpoint = 0.0f;
-            }
-            
+            // Done with ternary operators.
+            coastSetpoint = ((currentTime - coastStartTime) < 2000) ? 0.0f : 
+                ((currentTime - coastStartTime) < 4000) ? 90.0f : 0.0f;
             control.PID(coastSetpoint, inputData.oriZ);
             break;
         }
