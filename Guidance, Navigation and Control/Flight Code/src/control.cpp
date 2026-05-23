@@ -17,13 +17,11 @@ Control::Control() : previous_error_(0.0f), integral_error_(0.0f), previous_time
 bool Control::Initialize() {
     initialized_ = false;
 
-    // Reset PID state to ensure clean start
     previous_error_ = 0.0f;
     integral_error_ = 0.0f;
     previous_time_ms_ = millis();
 
     // Initialize servo hardware (attaches pins, calibrates to 90°)
-    // NOTE: Assumes control_hardware_ member exists and has Initialize() method
     if (!control_hardware_.Initialize()) {
         DEBUG_PRINTLN("Failed to initialize ControlHardware!");
         return false;
@@ -66,9 +64,7 @@ void Control::PID(float set_angle_deg, float current_angle_deg) {
     float dt = (current_time_ms - previous_time_ms_) * 0.001f;  // Convert ms to seconds
 
     // Prevent division by zero and ensure minimum dt for numerical stability
-    if (dt <= 0.0f) {
-        dt = 0.001f;  // Minimum 1ms timestep
-    }
+    if (dt <= 0.0f) { dt = 0.001f; }  // Minimum 1ms timestep
 
     // Proportional term
     float p_term = Kp * angular_error;
@@ -77,22 +73,9 @@ void Control::PID(float set_angle_deg, float current_angle_deg) {
     float candidate_integral = integral_error_ + angular_error * dt;
     float i_term = Ki * candidate_integral;
 
-    // Derivative term
-    float d_term = Kd * ((angular_error - previous_error_) / dt);
+    float d_term = Kd * ((angular_error - previous_error_) / dt); // Derivative term
 
-    //if current angle is small, D output = 0
-    //if (abs(angular_error - previous_error_) < 10.0f) {
-    //  d_term = 0.00f;
-    //}
-
-    //if (previous_error_ > 0.0 && previous_error_ < 30.0f) {
-    //    Kd = 0.01f;
-    //} else if (previous_error_ < 0 && previous_error_ > -30.0f) {
-    //    Kd = 0.01f;
-    //}
-
-    // Combine PID terms for raw output
-    float output = p_term + i_term + d_term;
+    float output = p_term + i_term + d_term; // Combine PID terms for raw output
 
     // Debugging output for PID terms and raw output before saturation
     #ifdef TEST_PID_AND_CALIBRATION_MODE

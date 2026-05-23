@@ -10,7 +10,7 @@
  * port for monitoring.
  */
 
-#include "Arduino.h"
+#include <Arduino.h>
 #include "constants.h"
 #include "control.h"
 #include "control_hardware.h"
@@ -25,20 +25,16 @@ DataLogger data_logger;
 Sensors sensors(data_logger);
 Control control;
 
-// Main variables
-float error; // Control error used for status reporting and LED state.
-constexpr float setpoints[] = {0.0f, 90.0f}; // Predefined setpoints for PID testing (0° and 90° roll).
-
 #if defined(PRODUCTION_FLIGHT_MODE) || defined(TEST_STATE_MACHINE_MODE)
     StateMachine state_machine(data_logger, sensors, control); // Only needed in production flight mode and state machine testing mode
     bool coastManeuverStarted = false;
     unsigned long coastStartTime = 0;
 #endif
 
-// Timing variables for setpoint switching in TEST_PID_AND_CALIBRATION_MODE.
 #ifdef TEST_PID_AND_CALIBRATION_MODE
+    constexpr float setpoints[] = {0.0f, 90.0f}; // Predefined setpoints for PID testing (0° and 90° roll).
     static unsigned long lastSwitchTime = 0;
-    static constexpr unsigned long interval = 5000;
+    static constexpr unsigned long interval = 5000; // Time (ms) between changing between setpoints 
 #endif
 
 #if defined(TEST_STATE_MACHINE_MODE) || defined(TEST_PID_AND_CALIBRATION_MODE)
@@ -67,7 +63,6 @@ constexpr float setpoints[] = {0.0f, 90.0f}; // Predefined setpoints for PID tes
         telem.rotZ = data.oriZ;
         telem.error = control.get_error();
         telem.timestamp = micros();
-
         serial.write((uint8_t *)&telem, sizeof(telem));
     }
 #endif
@@ -115,6 +110,7 @@ DEBUG_PRINTLN("\n\n=== " MODE_NAME " INITIALIZED ===");
  */
 void loop() {
     FlightData inputData = sensors.ReadFlightData(); // Actual live hardware data is always read.
+    data_logger.LogFlightData(inputData);
 
 #if defined(PRODUCTION_FLIGHT_MODE) || defined(TEST_STATE_MACHINE_MODE)
     #ifdef TEST_STATE_MACHINE_MODE
@@ -137,7 +133,6 @@ void loop() {
     }
     #endif
 
-    data_logger.LogFlightData(inputData);
     State currentState = state_machine.Update(inputData);
     const unsigned long currentTime = millis();
     float coastSetpoint = 0.0f; 
@@ -161,8 +156,7 @@ void loop() {
             // Command 180° for the next 4 seconds.
             // Return to 0° afterwards.
             // Done with ternary operators.
-            coastSetpoint = ((currentTime - coastStartTime) < 2000) ? 0.0f : 
-                ((currentTime - coastStartTime) < 4000) ? 90.0f : 0.0f;
+            coastSetpoint = (elapsedTime >= 2000 && elapsedTime < 4000) ? 90.0f : 0.0f;
             control.PID(coastSetpoint, inputData.oriZ);
             break;
         }
@@ -176,8 +170,8 @@ void loop() {
         }
         case State::kGround:{
             control.SetCanardAngle(0.0f);  // Neutral canard angle
-            delay(2000); // Wait for 2 seconds to ensure all flight data is logged before closing files
-            data_logger.Close(); // Close SD card
+            //delay(2000); // Wait for 2 seconds to ensure all flight data is logged before closing files
+            //data_logger.Close(); // Close SD card
             break;
         } 
         default: break;
@@ -206,7 +200,6 @@ void loop() {
 #endif
 
 #if defined(TEST_PID_AND_CALIBRATION_MODE)
-    data_logger.LogFlightData(inputData);
     const unsigned long currentTime = millis();
     constexpr size_t numSetpoints = std::size(setpoints); 
     static size_t setpointIndex = 0; // Static so that the value is not reset on each loop cycle

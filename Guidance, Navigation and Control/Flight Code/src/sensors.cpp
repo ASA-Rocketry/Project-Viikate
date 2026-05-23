@@ -2,9 +2,9 @@
 #include <SPI.h>
 #include <SparkFun_MMC5983MA_Arduino_Library.h>
 #include <cstdint>
-#include "Arduino.h"
-#include "ISM330DHCXSensor.h"
-#include "Wire.h"
+#include <Arduino.h>
+#include <ISM330DHCXSensor.h>
+#include <Wire.h>
 #include "constants.h"
 #include "pose.h"
 #include "sensors.h"
@@ -112,8 +112,7 @@ FlightData Sensors::ReadFlightData() {
             correctedGZ = imu_data.gz + initial_state_.angular_rate_offsets[2];
 
             //get z axis pos/vel/acc estimate from kalman filter
-            Eigen::VectorXd acc_estimate =
-                AccKalmanUpdate(correctedAX, correctedAY, correctedAZ);
+            Eigen::VectorXd acc_estimate = AccKalmanUpdate(correctedAX, correctedAY, correctedAZ);
 
             //update accX, accY, accZ, altitude and velocity based on acc_estimates
             flight_data.accX = acc_estimate(2);
@@ -122,8 +121,7 @@ FlightData Sensors::ReadFlightData() {
             flight_data.altitude = acc_estimate(6);
             flight_data.verticalVelocity = acc_estimate(7);
 
-            Eigen::VectorXd gyr_estimate =
-                GyroKalmanUpdate(correctedGX, correctedGY, correctedGZ);
+            Eigen::VectorXd gyr_estimate = GyroKalmanUpdate(correctedGX, correctedGY, correctedGZ);
 
             flight_data.oriX = gyr_estimate(0) * RAD_TO_DEG;
             flight_data.oriY = gyr_estimate(2) * RAD_TO_DEG;
@@ -165,7 +163,6 @@ bool Sensors::Initialize() {
     initializeMagnetometer();
     initaliseBarometer();
 
-    DEBUG_PRINTLN("Sensors initialized.");
     DEBUG_PRINTLN("=== Initial State ===");
 
     DEBUG_PRINTLN("Linear [position, velocity, acceleration]:");
@@ -197,8 +194,6 @@ bool Sensors::Initialize() {
 
     initialiseFilters();
 
-    //delay(5000);
-
     // Mark subsystem as successfully initialized
     initialized_ = true;
 
@@ -206,9 +201,7 @@ bool Sensors::Initialize() {
     return true;
 }
 
-bool Sensors::IsInitialized() const {
-    return initialized_;
-}
+bool Sensors::IsInitialized() const { return initialized_; }
 
 void Sensors::initialize_IMU() {
     if (!imu.begin()) {
@@ -554,9 +547,7 @@ float Sensors::readAccelMagnitude(IMU_Data_ imu_data) {
 
 // reads raw sensor data
 Sensors::IMU_Data_ Sensors::readIMU(uint16_t samples_to_read) {
-    if (!imu_initialized) {
-        return {0, 0, 0, 0, 0, 0};
-    }
+    if (!imu_initialized) { return {0, 0, 0, 0, 0, 0}; }
 
     int32_t accelerometer[3] = {0, 0, 0};
     int32_t gyroscope[3] = {0, 0, 0};
@@ -583,7 +574,6 @@ Sensors::IMU_Data_ Sensors::readIMU(uint16_t samples_to_read) {
         }
 
         // Only update imu_data when we have a fresh pair of readings
-
         // axis rotation fixed to make accelerometer z-axis point upwards
         if (acc_available && gyr_available) {
             imu_data.az = -accelerometer[0] * MG_TO_MPS2;
