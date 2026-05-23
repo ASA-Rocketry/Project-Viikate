@@ -134,39 +134,31 @@ State StateMachine::Update(const FlightData& data){
 
 void StateMachine::OnEnter(State new_state, unsigned long time_ms) {
     state_entry_time_ms = time_ms;
-    
+    data_logger_.LogEvent(LogType::kInfo, StateToString(active_state));
     switch(new_state) {
         case State::kCalibration:
-            data_logger_.LogEvent(LogType::kInfo, "State: Calibration");
             break;
         
         case State::kIdle:
-            data_logger_.LogEvent(LogType::kInfo, "State: Idle");
             break;
 
         case State::kLaunchpad:
-            data_logger_.LogEvent(LogType::kInfo, "State: Launchpad");
             break;
 
         case State::kLiftoff:
-            data_logger_.LogEvent(LogType::kInfo, "State: Liftoff");
             liftoff_time_ms = time_ms;
             break;
 
         case State::kCoast:
-            data_logger_.LogEvent(LogType::kInfo, "State: Coast");
             break;
 
         case State::kApogee:
-            data_logger_.LogEvent(LogType::kInfo, "State: Apogee");
             break;
 
         case State::kRDD:
-            data_logger_.LogEvent(LogType::kInfo, "State: Recovery");
             break;
 
         case State::kGround:
-            data_logger_.LogEvent(LogType::kInfo, "State: Ground");
             delay(2000); // Wait for 2 seconds to ensure all flight data is logged before closing files
             data_logger_.Close(); // Close SD card
             break;

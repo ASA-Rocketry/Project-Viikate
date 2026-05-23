@@ -1,7 +1,7 @@
 // KalmanFilter.cpp
-#include "pose.h"
 #include <Arduino.h>
 #include <ArduinoEigen.h>
+#include "pose.h"
 #include "debug_prints.h"
 
 KalmanFilter::KalmanFilter(double dt,

@@ -2,7 +2,6 @@
 #define FLIGHT_CODE_INCLUDE_CONSTANTS_H_
 
 #include <Arduino.h>
-
 #include <cstddef>
 
 // All constants are defined here
@@ -31,35 +30,24 @@ static float kZProportional = 0.1745f; // as per Taneli's simulations
 static float kZIntegrator = 0.1f; // as per wind tunnel tests
 static float kZDerivative = 0.06f;  // as per Taneli's simulations
 
-// Taneli the magician's Z rotation PID parameters:
-//static float kZProportional = 0.1745f;
-//static float kZIntegrator = 0.0f;
-//static float kZDerivative = 0.06f;
-
 // XY rotation PID parameters
 static float kXYProportional = 0.2f;
 static float kXYIntegrator = 0.1f;
 static float kXYDerivative = 0.06f;
 
 // PID output limits
-static constexpr float kMaxControlAngle =
-    30.0f;  // Max canard deflection in degrees
-static constexpr float kMinControlAngle =
-    -30.0f;  // Min canard deflection in degrees
-static constexpr float kNeutralControlAngle =
-    0.0f;  // Neutral canard deflection in degrees
+static constexpr float kMaxControlAngle = 30.0f;  // Max canard deflection in degrees
+static constexpr float kMinControlAngle = -30.0f;  // Min canard deflection in degrees
+static constexpr float kNeutralControlAngle = 0.0f;  // Neutral canard deflection in degrees
 
 // PID effective input range
 static constexpr float kPidMinAngle = -30.0f;
 static constexpr float kPidMaxAngle = 30.0f;
 
 // Servo mapping limits (for ControlHardware)
-static constexpr float kServoMinAngle =
-    60.0f;  // Servo minimum command angle in degrees
-static constexpr float kServoMaxAngle =
-    120.0f;  // Servo maximum command angle in degrees
-static constexpr float kServoNeutralAngle =
-    90.0f;  // Servo neutral command angle
+static constexpr float kServoMinAngle = 60.0f;  // Servo minimum command angle in degrees
+static constexpr float kServoMaxAngle = 120.0f;  // Servo maximum command angle in degrees
+static constexpr float kServoNeutralAngle = 90.0f;  // Servo neutral command angle
 
 // servo trimming parameters
 static float kServoTrim1 = -12.0f;

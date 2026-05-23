@@ -4,7 +4,7 @@
 ControlHardware::ControlHardware() {}
 
 bool ControlHardware::Initialize() {
-    // NOTE: Assumes servo pins are defined in constants.h
+    // NOTE: Assumes servo pins are correctly defined in constants.h
     servo1_.attach(constants::kServo1Pin);
     servo2_.attach(constants::kServo2Pin);
     servo3_.attach(constants::kServo3Pin);

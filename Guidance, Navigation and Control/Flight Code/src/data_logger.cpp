@@ -1,10 +1,8 @@
-#include "data_logger.h"
-
 #include <Arduino.h>
 #include <SD.h>
 #include <SPI.h>
-
 #include "constants.h"
+#include "data_logger.h"
 #include "debug_prints.h"
 
 DataLogger::DataLogger() {}
@@ -56,19 +54,14 @@ bool DataLogger::Initialize() {
     event_data_file_ = SD.open(event_file_.c_str(), FILE_WRITE);  // Event Data File
 
     if (!event_data_file_) {
-
-        DEBUG_PRINTLN("ERROR: Failed to open event log file");
-
-        // Clean up already-opened flight file
-        flight_data_file_.close();
+        DEBUG_PRINTLN("ERROR: Failed to open event log file");   
+        flight_data_file_.close();// Clean up already-opened flight file
 
         return false;
     }
 
     // Write CSV header for event log
-    event_data_file_.println(
-        "time_ms,severity,message"
-    );
+    event_data_file_.println("time_ms,severity,message");
 
     event_data_file_.flush();
 
