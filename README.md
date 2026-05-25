@@ -12,6 +12,8 @@ Figure 1.
 
 The GPS module was emitted at the whole team meeting at 28.1.2026. Standard sensor drift can be accounted for. We will keep it in mind for other projects.
 
+Other decisions will be marked under each team's folder in a md file. 
+
 # Build instructions
 [Install nix](https://nixos.org/download/), then go to the root of the repo and run:
 ```sh
