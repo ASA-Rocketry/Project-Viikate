@@ -1,4 +1,7 @@
-# Design Decision Record (DDR): [Short Title]
+# Design Decision Record (DDR): Project Viikate
+
+# DDR Title [title]
+
 **Author:** [Name] | **Date:** [Date] | **Subsystem:** [e.g., Avionics]
 
 ### 1. The Problem
