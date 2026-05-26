@@ -1,9 +1,0 @@
-EESchema-DOCLIB  Version 2.0
-#
-$CMP TPS62153RGTR
-D 317V 1A Step-Down Converter in 3x3 QFN package
-K
-F http://www.ti.com/lit/gpn/TPS62153
-$ENDCMP
-#
-#End Doc Library
