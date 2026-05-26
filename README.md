@@ -46,7 +46,7 @@ Notice how getters and setters are not included. They are not important.
 - Use rebases instead of merges. Merges pollute history, rebases straighten it back out.
 - Don't commit stuff that is not supposed to be `diff`-ed. If you can't meaningfully interpret a file changing across time it should not be in git.
 - Don't commit caches. Temporary files, output binaries, stuff like that.
-- A commit message should follow the strict `type(scope): message` format. This is needed to make the scope of the changes easier to understand. For example: `feat(gnc): add the barrel roll logic`. The accepted types are as follows:
+- A commit message should follow the strict `type(scope): Message` format. This is needed to make the scope of the changes easier to understand. For example: `feat(gnc): Add the barrel roll logic`. The accepted types are as follows:
   - `feat` - a new feature, functionality that was previously missing.
   - `fix` - a fix to a bug that was causing trouble.
   - `style` - making some part of the code adhere to a style.
