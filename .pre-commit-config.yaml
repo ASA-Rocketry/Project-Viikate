@@ -3,11 +3,13 @@ repos:
     rev: v18.1.0
     hooks:
       - id: clang-format
+        always_run: true
 
   - repo: https://github.com/pocc/pre-commit-hooks
     rev: v1.3.5
     hooks:
       - id: clang-tidy
+        always_run: true
         args: ["-p=code/build"]
 
   - repo: https://github.com/compilerla/conventional-pre-commit
