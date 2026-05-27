@@ -21,7 +21,8 @@ jobs:
           sudo apt-get install -y meson ninja-build clang clang-tidy
 
       - name: Generate compile_commands.json
-        run: meson setup code/build code --wipe
+        working-directory: code
+        run: meson setup build --wipe
 
       - name: Install pre-commit
         run: pip install pre-commit
