@@ -4,6 +4,8 @@
 2. Open the repository in your preferred editor or just `cd` into it.
 3. Run `pip install pre-commit` to install the pre-commit hook manager.
 4. Run `pre-commit install --hook-type commit-msg` to activate all the local checks.
+5. Run `meson setup code/build code --wipe` to generate the project compilation commands.
+6. Run `meson compile -C code/build` to compile the binary. The final binary will be in `code/build/firmware/firmware`.
 
 ## Structure
 

@@ -1,0 +1,6 @@
+option('hal_backend',
+  type: 'combo',
+  choices: ['mock', 'teensy41'],
+  value: 'mock',
+  description: 'Select HAL backend implementation'
+)
