@@ -24,6 +24,13 @@ jobs:
         working-directory: code
         run: meson setup build --wipe
 
+      - name: Generate compile_commands.json
+        working-directory: code
+        run: meson compile -C build/
+
+      - name: Run the executable for one second to make sure it doesn't crash and burn on startup
+        run: timeout 1s ./code/build/firmware/firmware || true
+
       - name: Install pre-commit
         run: pip install pre-commit
 
