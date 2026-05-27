@@ -2,7 +2,7 @@
 
 #include "defs.h"
 
-typedef enum pin_mode : unsigned char {
+typedef enum pin_mode: unsigned char {
     PIN_MODE_INACTIVE = 0,
     PIN_MODE_OUTPUT = 1,
     PIN_MODE_INPUT = 2,
