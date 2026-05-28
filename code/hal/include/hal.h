@@ -2,7 +2,9 @@
 
 #include "defs.h"
 
-typedef enum pin_mode : unsigned char {
+typedef int pin_id_logical;
+
+typedef enum {
   PIN_MODE_INACTIVE = 0,
   PIN_MODE_OUTPUT = 1,
   PIN_MODE_INPUT = 2,
@@ -10,9 +12,15 @@ typedef enum pin_mode : unsigned char {
 
 const char* pin_mode_to_str(pin_mode);
 
-typedef int pin_id_logical;
-
 typedef struct Hal Hal;
+
+#if defined(HAL_BACKEND_mock)
+#include "mock.h"
+#elif defined(HAL_BACKEND_teensy41)
+#include "teensy41.h"
+#else
+#error "HAL_BACKEND must be defined as 'mock' or 'teensy41'"
+#endif
 
 void Hal_init_begin(Hal* hal);
 

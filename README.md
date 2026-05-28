@@ -4,8 +4,25 @@
 2. Open the repository in your preferred editor or just `cd` into it.
 3. Run `pip install pre-commit` to install the pre-commit hook manager.
 4. Run `pre-commit install --hook-type commit-msg` to activate all the local checks.
-5. Run `meson setup code/build code --wipe` to generate the project compilation commands.
-6. Run `meson compile -C code/build` to compile the binary. The final binary will be in `code/build/firmware/firmware`.
+5. Build the project for your target:
+
+**Host (mock HAL)** — compiles a native executable for testing on your machine:
+
+```sh
+meson setup code/build code -Dhal_backend=mock
+meson compile -C code/build
+```
+
+The binary is `code/build/firmware/firmware`. Run it with `./code/build/firmware/firmware`.
+
+**Teensy 4.0/4.1** — cross-compiles a firmware image (requires `arm-none-eabi-gcc`):
+
+```sh
+meson setup build --cross-file code/cross/teensy.ini -Dhal_backend=teensy41
+meson compile -C build
+```
+
+The outputs are `build/firmware/firmware.hex` (Intel HEX) and `build/firmware/firmware.bin` (raw binary), ready to flash.
 
 ## Structure
 

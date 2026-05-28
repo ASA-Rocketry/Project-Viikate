@@ -1,7 +1,6 @@
 #include "hal.h"
-#include "mock.h"
 
-Hal make_hal() {
+Hal make_hal(void) {
   Hal hal;
 
   Hal_init_begin(&hal);
