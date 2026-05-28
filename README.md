@@ -1,6 +1,6 @@
 # Project Viikate
 
-1. Clone this repository using `git clone https://github.com/ASA-Rocketry/Project-Viikate.
+1. Clone this repository using `git clone https://github.com/ASA-Rocketry/Project-Viikate`.
 2. Open the repository in your preferred editor or just `cd` into it.
 3. Run `pip install pre-commit` to install the pre-commit hook manager.
 4. Run `pre-commit install --hook-type commit-msg` to activate all the local checks.
